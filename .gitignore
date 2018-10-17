@@ -4,6 +4,4 @@ node_modules
 coverage
 npm-debug.log
 test/test-bundle.js
-dist
-lib
 .idea
