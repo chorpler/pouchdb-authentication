@@ -2,30 +2,9 @@
 
 import { AuthError, doFetch, getBasicAuthHeaders } from './utils';
 
-import { assign, clone, parseUri, toPromise } from 'pouchdb-utils';
+import { assign, clone, toPromise } from 'pouchdb-utils';
 
-function getBaseUrl(db) {
-  // Use PouchDB.defaults' prefix, if any
-  let fullName;
-  if (db.__opts && db.__opts.prefix) {
-    var prefix = db.__opts.prefix;
-    fullName = prefix + (prefix.endsWith('/') ? '' : '/') + db.name;
-  } else {
-    fullName = db.name;
-  }
-
-  var uri = parseUri(fullName);
-
-  // Compute parent path for databases not hosted on domain root (see #215)
-  var path = uri.path;
-  var normalizedPath = path.endsWith('/') ? path.substr(0, -1) : path;
-  var parentPath = normalizedPath.split('/').slice(0, -1).join('/');
-
-  return uri.protocol + '://' +
-      uri.host +
-      (uri.port ? ':' + uri.port : '') +
-      parentPath;
-}
+import { getBaseUrl } from './utils';
 
 var getUsersDatabaseUrl = function () {
   var db = this;
