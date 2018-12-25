@@ -59,9 +59,9 @@ function getBasicAuthHeaders(db) {
 function doFetch(db, url, opts, callback) {
   opts = assign(opts || {});
   var newurl = url;
-  if (url[0] === '/') {
-    newurl = ".." + url;
-  }
+  // if (url[0] === '/') {
+  //   newurl = ".." + url;
+  // }
   
   if (opts.body && typeof opts.body !== 'string') {
     opts.body = JSON.stringify(opts.body);
