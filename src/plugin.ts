@@ -12,25 +12,43 @@ import {
   signUp,
 } from "./users";
 
-export var plugin:any = {};
-plugin.login = logIn;
-plugin.logIn = logIn;
-plugin.logout = logOut;
-plugin.logOut = logOut;
-plugin.getSession = getSession;
+export const PouchDBAuthPlugin:any = {
+  login               : logIn               ,
+  logIn               : logIn               ,
+  logout              : logOut              ,
+  logOut              : logOut              ,
+  getSession          : getSession          ,
+  getMembership       : getMembership       ,
+  signUpAdmin         : signUpAdmin         ,
+  deleteAdmin         : deleteAdmin         ,
+  getUsersDatabaseUrl : getUsersDatabaseUrl ,
+  signup              : signUp              ,
+  signUp              : signUp              ,
+  getUser             : getUser             ,
+  putUser             : putUser             ,
+  deleteUser          : deleteUser          ,
+  changePassword      : changePassword      ,
+  changeUsername      : changeUsername      ,
+};
+// let var plugin:any = {};
+// plugin.login = logIn;
+// plugin.logIn = logIn;
+// plugin.logout = logOut;
+// plugin.logOut = logOut;
+// plugin.getSession = getSession;
 
-plugin.getMembership = getMembership;
-plugin.signUpAdmin = signUpAdmin;
-plugin.deleteAdmin = deleteAdmin;
+// plugin.getMembership = getMembership;
+// plugin.signUpAdmin = signUpAdmin;
+// plugin.deleteAdmin = deleteAdmin;
 
-plugin.getUsersDatabaseUrl = getUsersDatabaseUrl;
-plugin.signup = signUp;
-plugin.signUp = signUp;
-plugin.getUser = getUser;
-plugin.putUser = putUser;
-plugin.deleteUser = deleteUser;
-plugin.changePassword = changePassword;
-plugin.changeUsername = changeUsername;
+// plugin.getUsersDatabaseUrl = getUsersDatabaseUrl;
+// plugin.signup = signUp;
+// plugin.signUp = signUp;
+// plugin.getUser = getUser;
+// plugin.putUser = putUser;
+// plugin.deleteUser = deleteUser;
+// plugin.changePassword = changePassword;
+// plugin.changeUsername = changeUsername;
 // export class PouchDBPlugin {
 //   public login = logIn;
 //   public logIn = logIn;
@@ -57,7 +75,7 @@ plugin.changeUsername = changeUsername;
 // let plugin:PouchDBPlugin = new PouchDBPlugin();
 
 if(typeof window !== 'undefined' && window.PouchDB) {
-  window.PouchDB.plugin(plugin);
+  window.PouchDB.plugin(PouchDBAuthPlugin);
 }
 
 // export default plugin;

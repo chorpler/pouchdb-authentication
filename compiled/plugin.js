@@ -3,23 +3,41 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var admins_1 = require("./admins");
 var authentication_1 = require("./authentication");
 var users_1 = require("./users");
-exports.plugin = {};
-exports.plugin.login = authentication_1.logIn;
-exports.plugin.logIn = authentication_1.logIn;
-exports.plugin.logout = authentication_1.logOut;
-exports.plugin.logOut = authentication_1.logOut;
-exports.plugin.getSession = authentication_1.getSession;
-exports.plugin.getMembership = admins_1.getMembership;
-exports.plugin.signUpAdmin = admins_1.signUpAdmin;
-exports.plugin.deleteAdmin = admins_1.deleteAdmin;
-exports.plugin.getUsersDatabaseUrl = users_1.getUsersDatabaseUrl;
-exports.plugin.signup = users_1.signUp;
-exports.plugin.signUp = users_1.signUp;
-exports.plugin.getUser = users_1.getUser;
-exports.plugin.putUser = users_1.putUser;
-exports.plugin.deleteUser = users_1.deleteUser;
-exports.plugin.changePassword = users_1.changePassword;
-exports.plugin.changeUsername = users_1.changeUsername;
+exports.PouchDBAuthPlugin = {
+    login: authentication_1.logIn,
+    logIn: authentication_1.logIn,
+    logout: authentication_1.logOut,
+    logOut: authentication_1.logOut,
+    getSession: authentication_1.getSession,
+    getMembership: admins_1.getMembership,
+    signUpAdmin: admins_1.signUpAdmin,
+    deleteAdmin: admins_1.deleteAdmin,
+    getUsersDatabaseUrl: users_1.getUsersDatabaseUrl,
+    signup: users_1.signUp,
+    signUp: users_1.signUp,
+    getUser: users_1.getUser,
+    putUser: users_1.putUser,
+    deleteUser: users_1.deleteUser,
+    changePassword: users_1.changePassword,
+    changeUsername: users_1.changeUsername,
+};
+// let var plugin:any = {};
+// plugin.login = logIn;
+// plugin.logIn = logIn;
+// plugin.logout = logOut;
+// plugin.logOut = logOut;
+// plugin.getSession = getSession;
+// plugin.getMembership = getMembership;
+// plugin.signUpAdmin = signUpAdmin;
+// plugin.deleteAdmin = deleteAdmin;
+// plugin.getUsersDatabaseUrl = getUsersDatabaseUrl;
+// plugin.signup = signUp;
+// plugin.signUp = signUp;
+// plugin.getUser = getUser;
+// plugin.putUser = putUser;
+// plugin.deleteUser = deleteUser;
+// plugin.changePassword = changePassword;
+// plugin.changeUsername = changeUsername;
 // export class PouchDBPlugin {
 //   public login = logIn;
 //   public logIn = logIn;
@@ -43,7 +61,7 @@ exports.plugin.changeUsername = users_1.changeUsername;
 // // let plugin:any = PouchDBPlugin;
 // let plugin:PouchDBPlugin = new PouchDBPlugin();
 if (typeof window !== 'undefined' && window.PouchDB) {
-    window.PouchDB.plugin(exports.plugin);
+    window.PouchDB.plugin(exports.PouchDBAuthPlugin);
 }
 // export default plugin;
 // export plugin;

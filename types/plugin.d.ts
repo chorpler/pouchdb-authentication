@@ -1,1 +1,1 @@
-export declare var plugin: any;
+export declare const PouchDBAuthPlugin: any;
