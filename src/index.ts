@@ -32,29 +32,29 @@ import {
 // plugin.changePassword = changePassword;
 // plugin.changeUsername = changeUsername;
 export class PouchDBPlugin {
-  public static login = logIn;
-  public static logIn = logIn;
-  public static logout = logOut;
-  public static logOut = logOut;
-  public static getSession = getSession;
-  public static getMembership = getMembership;
-  public static signUpAdmin = signUpAdmin;
-  public static deleteAdmin = deleteAdmin;
-  public static getUsersDatabaseUrl = getUsersDatabaseUrl;
-  public static signup = signUp;
-  public static signUp = signUp;
-  public static getUser = getUser;
-  public static putUser = putUser;
-  public static deleteUser = deleteUser;
-  public static changePassword = changePassword;
-  public static changeUsername = changeUsername;
+  public login = logIn;
+  public logIn = logIn;
+  public logout = logOut;
+  public logOut = logOut;
+  public getSession = getSession;
+  public getMembership = getMembership;
+  public signUpAdmin = signUpAdmin;
+  public deleteAdmin = deleteAdmin;
+  public getUsersDatabaseUrl = getUsersDatabaseUrl;
+  public signup = signUp;
+  public signUp = signUp;
+  public getUser = getUser;
+  public putUser = putUser;
+  public deleteUser = deleteUser;
+  public changePassword = changePassword;
+  public changeUsername = changeUsername;
   constructor() {
 
   }
 }
 
-// let plugin:PouchDBPlugin = new PouchDBPlugin();
-let plugin:any = PouchDBPlugin;
+// let plugin:any = PouchDBPlugin;
+let plugin:PouchDBPlugin = new PouchDBPlugin();
 
 if(typeof window !== 'undefined' && window.PouchDB) {
   window.PouchDB.plugin(plugin);

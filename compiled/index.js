@@ -22,28 +22,28 @@ var users_1 = require("./users");
 // plugin.changeUsername = changeUsername;
 var PouchDBPlugin = /** @class */ (function () {
     function PouchDBPlugin() {
+        this.login = authentication_1.logIn;
+        this.logIn = authentication_1.logIn;
+        this.logout = authentication_1.logOut;
+        this.logOut = authentication_1.logOut;
+        this.getSession = authentication_1.getSession;
+        this.getMembership = admins_1.getMembership;
+        this.signUpAdmin = admins_1.signUpAdmin;
+        this.deleteAdmin = admins_1.deleteAdmin;
+        this.getUsersDatabaseUrl = users_1.getUsersDatabaseUrl;
+        this.signup = users_1.signUp;
+        this.signUp = users_1.signUp;
+        this.getUser = users_1.getUser;
+        this.putUser = users_1.putUser;
+        this.deleteUser = users_1.deleteUser;
+        this.changePassword = users_1.changePassword;
+        this.changeUsername = users_1.changeUsername;
     }
-    PouchDBPlugin.login = authentication_1.logIn;
-    PouchDBPlugin.logIn = authentication_1.logIn;
-    PouchDBPlugin.logout = authentication_1.logOut;
-    PouchDBPlugin.logOut = authentication_1.logOut;
-    PouchDBPlugin.getSession = authentication_1.getSession;
-    PouchDBPlugin.getMembership = admins_1.getMembership;
-    PouchDBPlugin.signUpAdmin = admins_1.signUpAdmin;
-    PouchDBPlugin.deleteAdmin = admins_1.deleteAdmin;
-    PouchDBPlugin.getUsersDatabaseUrl = users_1.getUsersDatabaseUrl;
-    PouchDBPlugin.signup = users_1.signUp;
-    PouchDBPlugin.signUp = users_1.signUp;
-    PouchDBPlugin.getUser = users_1.getUser;
-    PouchDBPlugin.putUser = users_1.putUser;
-    PouchDBPlugin.deleteUser = users_1.deleteUser;
-    PouchDBPlugin.changePassword = users_1.changePassword;
-    PouchDBPlugin.changeUsername = users_1.changeUsername;
     return PouchDBPlugin;
 }());
 exports.PouchDBPlugin = PouchDBPlugin;
-// let plugin:PouchDBPlugin = new PouchDBPlugin();
-var plugin = PouchDBPlugin;
+// let plugin:any = PouchDBPlugin;
+var plugin = new PouchDBPlugin();
 if (typeof window !== 'undefined' && window.PouchDB) {
     window.PouchDB.plugin(plugin);
 }
