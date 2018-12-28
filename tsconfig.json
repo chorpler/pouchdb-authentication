@@ -8,6 +8,7 @@
       "dom"
     ],
     "moduleResolution": "node",
+    "esModuleInterop": true,
     "allowJs": false,
     "noImplicitAny": false,
     "noImplicitThis": false,
