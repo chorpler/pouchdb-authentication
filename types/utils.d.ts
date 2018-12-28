@@ -117,4 +117,4 @@ declare class AuthError extends Error {
 }
 declare type LoginOptions = PouchDB.Core.Options;
 declare type BasicResponse = PouchDB.Core.BasicResponse;
-export { AuthError, doFetch, getBasicAuthHeaders, getBaseUrl, PDB, PouchDBUserDoc, LoginOptions, LoginResponse, BasicResponse, SessionResponse, PutUserOptions, CouchNodeMembership, };
+export { AuthError, doFetch, getBasicAuthHeaders, getBaseUrl, AuthHeader, PDBOpts, UserContext, User, PDB, PouchDBUserDoc, LoginOptions, LoginResponse, BasicResponse, SessionResponse, PutUserOptions, CouchNodeMembership, };
