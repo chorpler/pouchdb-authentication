@@ -1,4 +1,4 @@
-'use strict';
+declare const window:any;
 
 import { deleteAdmin, getMembership, signUpAdmin } from "./admins";
 import { getSession, logIn, logOut } from "./authentication";
@@ -12,7 +12,7 @@ import {
   signUp,
 } from "./users";
 
-var plugin = {};
+let plugin:any = {};
 
 plugin.login = logIn;
 plugin.logIn = logIn;
@@ -37,4 +37,5 @@ if (typeof window !== 'undefined' && window.PouchDB) {
   window.PouchDB.plugin(plugin);
 }
 
-export default plugin;
+// export default plugin;
+export { plugin };
