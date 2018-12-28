@@ -28,13 +28,11 @@
     "dist",
     "lib",
     "compiled",
-    "build",
-    "types"
+    "build"
   ],
   "main": "compiled/index.js",
   "jsnext:main": "build/pouchdb-authentication.bundle.js",
   "module": "build/pouchdb-authentication.bundle.js",
-  "types": "types/utils.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chorpler/pouchdb-authentication.git"
