@@ -12,7 +12,7 @@ import {
   signUp,
 } from "./users";
 
-let plugin:any = {};
+export var plugin:any = {};
 plugin.login = logIn;
 plugin.logIn = logIn;
 plugin.logout = logOut;
@@ -61,4 +61,4 @@ if(typeof window !== 'undefined' && window.PouchDB) {
 }
 
 // export default plugin;
-export { plugin };
+// export plugin;
