@@ -1,6 +1,6 @@
 {
   "name": "pouchdb-authentication",
-  "version": "7.0.9",
+  "version": "7.0.13",
   "description": "PouchDB Authentication",
   "keywords": [
     "pouch",
@@ -30,26 +30,28 @@
     "compiled",
     "build"
   ],
-  "main": "build/pouchdb-authentication.bundle.js",
-  "jsnext:main": "build/pouchdb-authentication.bundle.js",
-  "module": "build/pouchdb-authentication.bundle.js",
+  "main": "compiled/index.js",
+  "jsnext:main": "lib/index.es.js",
+  "module": "lib/index.es.js",
+  "types": "types/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chorpler/pouchdb-authentication.git"
   },
   "scripts": {
     "compile": "tsc -p ./tsconfig.json",
-    "clean": "rimraf lib dist compiled build && mkdirp lib dist compiled build",
+    "clean": "rimraf lib dist build && mkdirp lib dist build",
     "declarations": "tsc -p ./tsconfig.json --emitDeclarationOnly",
     "rollup-cjs": "rollup -c config/rollup.config.cjs.js && rollup -c config/rollup.config.browser.cjs.js",
     "rollup-es": "rollup -c config/rollup.config.es.js && rollup -c config/rollup.config.browser.es.js",
     "rollup": "npm-run-all --parallel rollup-cjs rollup-es",
-    "rollup-browserify": "browserify -t brfs -p bundle-collapser/plugin -s PouchAuthentication lib/index.browser.js > dist/pouchdb.authentication.js",
-    "browserify": "browserify -t brfs -p bundle-collapser/plugin -s PouchAuthentication build/pouchdb-authentication.bundle.js > dist/pouchdb.authentication.js",
+    "browserify:rollup": "browserify -t brfs -p bundle-collapser/plugin -s PouchAuthentication lib/index.browser.js > dist/pouchdb.authentication.js",
+    "browserify:webpack": "browserify -t brfs -p bundle-collapser/plugin -s PouchAuthentication build/pouchdb-authentication.bundle.js > dist/pouchdb.authentication.js",
+    "browserify": "npm run browserify:rollup",
     "minify": "uglifyjs -mc < dist/pouchdb.authentication.js > dist/pouchdb.authentication.min.js",
     "build": "npm-run-all clean compile webpack browserify minify",
-    "build:dev": "npm-run-all clean compile webpack:dev browserify minify",
-    "build:prod": "npm-run-all clean compile webpack:prod browserify minify",
+    "build:dev": "npm-run-all clean compile rollup browserify minify",
+    "build:prod": "npm-run-all clean compile rollup browserify minify",
     "prepublishOnly": "npm run build",
     "lint": "eslint bin/ compiled/ test/",
     "dev": "npm run test-local",
@@ -57,22 +59,30 @@
     "test-local": "cross-env CLIENT=local npm run test",
     "test-node": "cross-env CLIENT=node npm run test",
     "test-phantom": "cross-env CLIENT=phantom npm run test",
-    "test-types": "tsc --noEmit -p types",
+    "test-types": "tsc --noEmit -p ./tsconfig.json",
     "release": "standard-version",
-    "webpack:dev" : "cross-env BUILD_MODE=development webpack --config ./config/webpack.config.babel.js",
+    "webpack:dev": "cross-env BUILD_MODE=development webpack --config ./config/webpack.config.babel.js",
     "webpack:prod": "cross-env BUILD_MODE=production webpack --config ./config/webpack.config.babel.js",
     "webpack": "npm run webpack:prod"
   },
   "scriptsComments": {
+    "clean": "rimraf lib dist compiled build && mkdirp lib dist compiled build",
+    "build:dev": "npm-run-all clean compile webpack:dev rollup browserify minify",
+    "build:prod": "npm-run-all clean compile webpack:prod rollup browserify minify",
+    "test-types": "tsc --noEmit -p types",
     "originalKeys": {
       "main": "lib/index.js",
       "jsnext:main": "lib/index.es.js",
       "module": "lib/index.es.js",
       "types": "types/index.d.ts"
+    },
+    "webpackKeys": {
+      "main": "build/pouchdb-authentication.bundle.js",
+      "jsnext:main": "build/pouchdb-authentication.bundle.js",
+      "module": "build/pouchdb-authentication.bundle.js"
     }
   },
   "dependencies": {
-    "inherits": "2.0.3",
     "pouchdb-binary-utils": "^7.0.0",
     "pouchdb-core": "^7.0.0",
     "pouchdb-fetch": "^7.0.0",
@@ -98,6 +108,7 @@
     "cross-env": "^5.2.0",
     "dtslint": "^0.4.2",
     "eslint": "^4.6.1",
+    "inherits": "^2.0.3",
     "istanbul": "^0.4.5",
     "karma": "^2.0.0",
     "karma-browserify": "^5.1.2",
@@ -119,8 +130,10 @@
     "rollup-plugin-inject": "^2.0.0",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-replace": "^2.0.0",
+    "rollup-plugin-typescript": "^1.0.0",
     "source-map-loader": "^0.2.4",
     "standard-version": "^4.2.0",
+    "tslint-eslint-rules": "^5.4.0",
     "typescript": "^3.2.2",
     "uglify-js": "^3.1.9",
     "uglifyjs-webpack-plugin": "^2.1.1",
@@ -128,6 +141,12 @@
     "webpack": "^4.28.2",
     "webpack-cli": "^3.1.2",
     "whatwg-fetch": "^3.0.0"
+  },
+  "devDependenciesComments": {
+    "removed": {
+      "inherits": "2.0.3",
+      "pouchdb-server": "^4.1.0"
+    }
   },
   "// greenkeeper": [
     "// chai-as-promised is pinned because of breaking changes in 6.0.0 which make phantomjs crash"

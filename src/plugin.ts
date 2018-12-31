@@ -12,7 +12,7 @@ import {
   signUp,
 } from "./users";
 
-export const PouchDBAuthPlugin:any = {
+const PouchDBAuthPlugin:any = {
   login               : logIn               ,
   logIn               : logIn               ,
   logout              : logOut              ,
@@ -30,6 +30,9 @@ export const PouchDBAuthPlugin:any = {
   changePassword      : changePassword      ,
   changeUsername      : changeUsername      ,
 };
+
+const plugin:any = PouchDBAuthPlugin;
+export { plugin };
 // let var plugin:any = {};
 // plugin.login = logIn;
 // plugin.logIn = logIn;

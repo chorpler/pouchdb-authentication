@@ -40,12 +40,13 @@ var utils_2 = require("./utils");
 var pouchdb_utils_1 = require("pouchdb-utils");
 var logIn = function (username, password, opts) {
     return __awaiter(this, void 0, void 0, function () {
-        var db, err, err, err, url, ajaxOpts, res, err_1;
+        var db, options, err, err, err, url, headers, ajaxOpts, res, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
                     db = this;
+                    options = opts != undefined ? opts : {};
                     if (['http', 'https'].indexOf(db.type()) === -1) {
                         err = new Error("pouchdb-authentication plugin only works for the http/https adapter");
                         throw err;
@@ -59,11 +60,14 @@ var logIn = function (username, password, opts) {
                         throw err;
                     }
                     url = '/_session';
+                    headers = utils_2.getBasicAuthHeaders(db);
+                    headers.append('Content-Type', 'application/json');
                     ajaxOpts = pouchdb_utils_1.assign({
                         method: 'POST',
-                        headers: pouchdb_utils_1.assign({ 'Content-Type': 'application/json' }, utils_2.getBasicAuthHeaders(db)),
+                        // headers: assign({'Content-Type': 'application/json'}, getBasicAuthHeaders(db)),
+                        headers: headers,
                         body: { name: username, password: password },
-                    }, opts.ajax || {});
+                    }, options.ajax || {});
                     return [4 /*yield*/, utils_1.doFetch(db, url, ajaxOpts)];
                 case 1:
                     res = _a.sent();
@@ -79,17 +83,18 @@ var logIn = function (username, password, opts) {
 exports.logIn = logIn;
 var logOut = function (opts) {
     return __awaiter(this, void 0, void 0, function () {
-        var db, url, ajaxOpts, res, err_2;
+        var db, options, url, ajaxOpts, res, err_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
                     db = this;
+                    options = opts != undefined ? opts : {};
                     url = '/_session';
                     ajaxOpts = pouchdb_utils_1.assign({
                         method: 'DELETE',
                         headers: utils_2.getBasicAuthHeaders(db),
-                    }, opts.ajax || {});
+                    }, options.ajax || {});
                     return [4 /*yield*/, utils_1.doFetch(db, url, ajaxOpts)];
                 case 1:
                     res = _a.sent();

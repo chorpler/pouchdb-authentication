@@ -19,12 +19,13 @@ const getConfigUrl = function(db:PDB, nodeName?:string):string {
 const getMembership = async function(opts:LoginOptions):Promise<CouchNodeMembership> {
   try {
     let db:PDB = this;
+    let options:any = opts != undefined ? opts : {};
     let dbURL:string = getBaseUrl(db);
     let url:string = dbURL + '/_membership';
     let ajaxOpts:any = assign({
       method: 'GET',
       headers: getBasicAuthHeaders(db),
-    }, (opts as any).ajax || {});
+    }, options.ajax || {});
     let res:CouchNodeMembership = await doFetch(db, url, ajaxOpts);
     return res;
   } catch(err) {
@@ -35,6 +36,7 @@ const getMembership = async function(opts:LoginOptions):Promise<CouchNodeMembers
 const signUpAdmin = async function(username:string, password:string, opts:LoginOptions):Promise<BasicResponse> {
   try {
     let db:PDB = this;
+    let options:any = opts != undefined ? opts : {};
     if(['http', 'https'].indexOf(db.type()) === -1) {
       let err:AuthError = new AuthError('This plugin only works for the http/https adapter. So you should use new PouchDB("http://mysite.com:5984/mydb") instead.');
       throw err;
@@ -61,13 +63,13 @@ const signUpAdmin = async function(username:string, password:string, opts:LoginO
       }
     }
     let configUrl:string = getConfigUrl(db, nodeName);
-    let url:string = ((opts as any).configUrl || configUrl) + '/admins/' + encodeURIComponent(username);
+    let url:string = (options.configUrl || configUrl) + '/admins/' + encodeURIComponent(username);
     let ajaxOpts:any = assign({
       method: 'PUT',
       processData: false,
       headers: getBasicAuthHeaders(db),
       body: '"' + password + '"',
-    }, (opts as any).ajax || {});
+    }, options.ajax || {});
     let res:BasicResponse = await doFetch(db, url, ajaxOpts);
     return res;
   } catch(err) {
@@ -78,6 +80,7 @@ const signUpAdmin = async function(username:string, password:string, opts:LoginO
 const deleteAdmin = async function(username:string, opts:LoginOptions):Promise<BasicResponse> {
   try {
     let db:PDB = this;
+    let options:any = opts != undefined ? opts : {};
     if(['http', 'https'].indexOf(db.type()) === -1) {
       let err:AuthError = new AuthError('This plugin only works for the http/https adapter. So you should use new PouchDB("http://mysite.com:5984/mydb") instead.');
       throw err;
@@ -101,12 +104,12 @@ const deleteAdmin = async function(username:string, opts:LoginOptions):Promise<B
       }
     }
     let configUrl:string = getConfigUrl(db, nodeName);
-    let url:string = ((opts as any).configUrl || configUrl) + '/admins/' + encodeURIComponent(username);
+    let url:string = (options.configUrl || configUrl) + '/admins/' + encodeURIComponent(username);
     let ajaxOpts:any = assign({
       method: 'DELETE',
       processData: false,
       headers: getBasicAuthHeaders(db),
-    }, (opts as any).ajax || {});
+    }, options.ajax || {});
 
     let res:BasicResponse = await doFetch(db, url, ajaxOpts);
     return res;

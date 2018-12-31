@@ -48,11 +48,12 @@ var getUsersDatabaseUrl = function () {
 exports.getUsersDatabaseUrl = getUsersDatabaseUrl;
 var updateUser = function (db, user, opts) {
     return __awaiter(this, void 0, void 0, function () {
-        var reservedWords, key, err, url, ajaxOpts, res, err_1;
+        var options, reservedWords, key, err, url, ajaxOpts, res, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
+                    options = opts != undefined ? opts : {};
                     reservedWords = [
                         '_id',
                         '_rev',
@@ -82,7 +83,7 @@ var updateUser = function (db, user, opts) {
                         method: 'PUT',
                         body: user,
                         headers: utils_3.getBasicAuthHeaders(db),
-                    }, opts.ajax || {});
+                    }, options.ajax || {});
                     return [4 /*yield*/, utils_2.doFetch(db, url, ajaxOpts)];
                 case 1:
                     res = _a.sent();
@@ -97,12 +98,13 @@ var updateUser = function (db, user, opts) {
 };
 var signUp = function (username, password, opts) {
     return __awaiter(this, void 0, void 0, function () {
-        var db, err, err, err, userId, user, res, err_2;
+        var db, options, err, err, err, userId, user, res, err_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
                     db = this;
+                    options = opts != undefined ? opts : {};
                     if (['http', 'https'].indexOf(db.type()) === -1) {
                         err = new utils_1.AuthError('This plugin only works for the http/https adapter. So you should use new PouchDB("http://mysite.com:5984/mydb") instead.');
                         throw err;
@@ -123,7 +125,7 @@ var signUp = function (username, password, opts) {
                         type: 'user',
                         _id: userId,
                     };
-                    return [4 /*yield*/, updateUser(db, user, opts)];
+                    return [4 /*yield*/, updateUser(db, user, options)];
                 case 1:
                     res = _a.sent();
                     return [2 /*return*/, res];
@@ -138,12 +140,13 @@ var signUp = function (username, password, opts) {
 exports.signUp = signUp;
 var getUser = function (username, opts) {
     return __awaiter(this, void 0, void 0, function () {
-        var db, err, url, ajaxOpts, res, err_3;
+        var db, options, err, url, ajaxOpts, res, err_3;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
                     db = this;
+                    options = opts != undefined ? opts : {};
                     if (!username) {
                         err = new utils_1.AuthError('you must provide a username');
                         throw err;
@@ -152,7 +155,7 @@ var getUser = function (username, opts) {
                     ajaxOpts = pouchdb_utils_1.assign({
                         method: 'GET',
                         headers: utils_3.getBasicAuthHeaders(db),
-                    }, opts.ajax || {});
+                    }, options.ajax || {});
                     return [4 /*yield*/, utils_2.doFetch(db, url, ajaxOpts)];
                 case 1:
                     res = _a.sent();
@@ -168,12 +171,13 @@ var getUser = function (username, opts) {
 exports.getUser = getUser;
 var putUser = function (username, opts) {
     return __awaiter(this, void 0, void 0, function () {
-        var db, err, err, user, res, err_4;
+        var db, options, err, err, user, res, err_4;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 3, , 4]);
                     db = this;
+                    options = opts != undefined ? opts : {};
                     if (['http', 'https'].indexOf(db.type()) === -1) {
                         err = new utils_1.AuthError('This plugin only works for the http/https adapter. So you should use new PouchDB("http://mysite.com:5984/mydb") instead.');
                         throw err;
@@ -182,10 +186,10 @@ var putUser = function (username, opts) {
                         err = new utils_1.AuthError('You must provide a username');
                         throw err;
                     }
-                    return [4 /*yield*/, db.getUser(username, opts)];
+                    return [4 /*yield*/, db.getUser(username, options)];
                 case 1:
                     user = _a.sent();
-                    return [4 /*yield*/, updateUser(db, user, opts)];
+                    return [4 /*yield*/, updateUser(db, user, options)];
                 case 2:
                     res = _a.sent();
                     return [2 /*return*/, res];
@@ -200,12 +204,13 @@ var putUser = function (username, opts) {
 exports.putUser = putUser;
 var deleteUser = function (username, opts) {
     return __awaiter(this, void 0, void 0, function () {
-        var db, err, err, user, url, ajaxOpts, res, err_5;
+        var db, options, err, err, user, url, ajaxOpts, res, err_5;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 3, , 4]);
                     db = this;
+                    options = opts != undefined ? opts : {};
                     if (['http', 'https'].indexOf(db.type()) === -1) {
                         err = new utils_1.AuthError('This plugin only works for the http/https adapter. So you should use new PouchDB("http://mysite.com:5984/mydb") instead.');
                         throw err;
@@ -214,14 +219,14 @@ var deleteUser = function (username, opts) {
                         err = new utils_1.AuthError('You must provide a username');
                         throw err;
                     }
-                    return [4 /*yield*/, db.getUser(username, opts)];
+                    return [4 /*yield*/, db.getUser(username, options)];
                 case 1:
                     user = _a.sent();
                     url = '/_users/' + encodeURIComponent(user._id) + '?rev=' + user._rev;
                     ajaxOpts = pouchdb_utils_1.assign({
                         method: 'DELETE',
                         headers: utils_3.getBasicAuthHeaders(db),
-                    }, opts.ajax || {});
+                    }, options.ajax || {});
                     return [4 /*yield*/, utils_2.doFetch(db, url, ajaxOpts)];
                 case 2:
                     res = _a.sent();
@@ -237,12 +242,13 @@ var deleteUser = function (username, opts) {
 exports.deleteUser = deleteUser;
 var changePassword = function (username, password, opts) {
     return __awaiter(this, void 0, void 0, function () {
-        var db, err, err, err, user, url, ajaxOpts, res, err_6;
+        var db, options, err, err, err, user, url, ajaxOpts, res, err_6;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 3, , 4]);
                     db = this;
+                    options = opts != undefined ? opts : {};
                     if (['http', 'https'].indexOf(db.type()) === -1) {
                         err = new utils_1.AuthError('This plugin only works for the http/https adapter. So you should use new PouchDB("http://mysite.com:5984/mydb") instead.');
                         throw err;
@@ -255,7 +261,7 @@ var changePassword = function (username, password, opts) {
                         err = new utils_1.AuthError('You must provide a password');
                         throw err;
                     }
-                    return [4 /*yield*/, db.getUser(username, opts)];
+                    return [4 /*yield*/, db.getUser(username, options)];
                 case 1:
                     user = _a.sent();
                     user.password = password;
@@ -264,7 +270,7 @@ var changePassword = function (username, password, opts) {
                         method: 'PUT',
                         headers: utils_3.getBasicAuthHeaders(db),
                         body: user,
-                    }, opts.ajax || {});
+                    }, options.ajax || {});
                     return [4 /*yield*/, utils_2.doFetch(db, url, ajaxOpts)];
                 case 2:
                     res = _a.sent();
@@ -280,21 +286,23 @@ var changePassword = function (username, password, opts) {
 exports.changePassword = changePassword;
 var changeUsername = function (oldUsername, newUsername, opts) {
     return __awaiter(this, void 0, void 0, function () {
-        var db_1, USERNAME_PREFIX, fetch_1, updateUser_1, err, err, err, res, err, err_7, user, newUser, res, err_8, err_9;
+        var db_1, options, USERNAME_PREFIX, fetch_1, updateUser_1, err, err, err, res, err, err_7, user, newUser, res, err_8, err_9;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 11, , 12]);
                     db_1 = this;
+                    options = opts != undefined ? opts : {};
                     USERNAME_PREFIX = 'org.couchdb.user:';
                     fetch_1 = function (url, opts) {
                         return __awaiter(this, void 0, void 0, function () {
-                            var res, err_10;
+                            var options_1, res, err_10;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
                                         _a.trys.push([0, 2, , 3]);
-                                        return [4 /*yield*/, utils_2.doFetch(db_1, url, opts)];
+                                        options_1 = opts != undefined ? opts : {};
+                                        return [4 /*yield*/, utils_2.doFetch(db_1, url, options_1)];
                                     case 1:
                                         res = _a.sent();
                                         return [2 /*return*/, res];
@@ -308,17 +316,18 @@ var changeUsername = function (oldUsername, newUsername, opts) {
                     };
                     updateUser_1 = function (user, opts) {
                         return __awaiter(this, void 0, void 0, function () {
-                            var url, updateOpts, res, err_11;
+                            var options_2, url, updateOpts, res, err_11;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
                                         _a.trys.push([0, 2, , 3]);
+                                        options_2 = opts != undefined ? opts : {};
                                         url = '/_users/' + encodeURIComponent(user._id);
                                         updateOpts = pouchdb_utils_1.assign({
                                             method: 'PUT',
                                             headers: utils_3.getBasicAuthHeaders(db_1),
                                             body: user,
-                                        }, opts.ajax || {});
+                                        }, options_2.ajax || {});
                                         return [4 /*yield*/, fetch_1(url, updateOpts)];
                                     case 1:
                                         res = _a.sent();
@@ -331,7 +340,7 @@ var changeUsername = function (oldUsername, newUsername, opts) {
                             });
                         });
                     };
-                    opts.ajax = opts.ajax || {};
+                    options.ajax = options.ajax || {};
                     if (['http', 'https'].indexOf(db_1.type()) === -1) {
                         err = new utils_1.AuthError('This plugin only works for the http/https adapter. So you should use new PouchDB("http://mysite.com:5984/mydb") instead.');
                         throw err;
@@ -347,7 +356,7 @@ var changeUsername = function (oldUsername, newUsername, opts) {
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 3, , 10]);
-                    return [4 /*yield*/, db_1.getUser(newUsername, opts)];
+                    return [4 /*yield*/, db_1.getUser(newUsername, options)];
                 case 2:
                     res = _a.sent();
                     err = new utils_1.AuthError('user already exists');
@@ -358,19 +367,19 @@ var changeUsername = function (oldUsername, newUsername, opts) {
                     _a.label = 4;
                 case 4:
                     _a.trys.push([4, 8, , 9]);
-                    return [4 /*yield*/, db_1.getUser(oldUsername, opts)];
+                    return [4 /*yield*/, db_1.getUser(oldUsername, options)];
                 case 5:
                     user = _a.sent();
                     newUser = pouchdb_utils_2.clone(user);
                     delete newUser._rev;
                     newUser._id = USERNAME_PREFIX + newUsername;
                     newUser.name = newUsername;
-                    newUser.roles = opts.roles || user.roles || [];
-                    return [4 /*yield*/, updateUser_1(newUser, opts)];
+                    newUser.roles = options.roles || user.roles || [];
+                    return [4 /*yield*/, updateUser_1(newUser, options)];
                 case 6:
                     res = _a.sent();
                     user._deleted = true;
-                    return [4 /*yield*/, updateUser_1(user, opts)];
+                    return [4 /*yield*/, updateUser_1(user, options)];
                 case 7:
                     res = _a.sent();
                     return [2 /*return*/, res];

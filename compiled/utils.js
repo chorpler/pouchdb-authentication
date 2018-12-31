@@ -54,7 +54,7 @@ var pouchdb_utils_1 = require("pouchdb-utils");
 var getBaseUrl = function (db) {
     // Use PouchDB.defaults' prefix, if any
     var fullName;
-    if (db && db.prefix) {
+    if (db && db.prefix && ['http', 'https'].indexOf(db.type()) === -1) {
         var prefix = db.prefix;
         fullName = prefix + (prefix.endsWith('/') ? '' : '/') + db.name;
     }
@@ -66,10 +66,12 @@ var getBaseUrl = function (db) {
     var path = uri.path;
     var normalizedPath = path.endsWith('/') ? path.substr(0, -1) : path;
     var parentPath = normalizedPath.split('/').slice(0, -1).join('/');
-    return uri.protocol + '://' +
+    var baseURL = uri.protocol + '://' +
         uri.host +
         (uri.port ? ':' + uri.port : '') +
         parentPath;
+    console.log("getBaseUrl(): Base URL is '" + baseURL + "'");
+    return baseURL;
 };
 exports.getBaseUrl = getBaseUrl;
 function getBasicAuthHeaders(db) {
@@ -98,20 +100,52 @@ function getBasicAuthHeaders(db) {
 exports.getBasicAuthHeaders = getBasicAuthHeaders;
 function doFetch(db, url, opts) {
     return __awaiter(this, void 0, void 0, function () {
-        var newurl, res, ok, content, err, err_1;
+        var newurl, baseURL, RESERVED_KEYS, res, ok, content, text, errText, finalErrorText, err, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 3, , 4]);
                     opts = pouchdb_utils_1.assign(opts || {});
-                    newurl = url;
+                    newurl = void 0;
+                    baseURL = void 0;
+                    RESERVED_KEYS = [
+                        '/_session',
+                        '/_active_tasks',
+                        '/_all_dbs',
+                        '/_dbs_info',
+                        '/_cluster_setup',
+                        '/_db_updates',
+                        '/_membership',
+                        '/_replicate',
+                        '/_scheduler',
+                        '/_node',
+                        '/_utils',
+                        '/_up',
+                        '/_uuids',
+                        '/favicon.ico',
+                    ];
+                    if (RESERVED_KEYS.indexOf(url) > -1) {
+                        baseURL = getBaseUrl(db);
+                    }
+                    else {
+                        baseURL = db.name;
+                    }
+                    if (url[0] === "/") {
+                        newurl = baseURL + url;
+                    }
+                    else {
+                        newurl = baseURL + "/" + url;
+                    }
                     // if(url[0] === '/') {
                     //   newurl = ".." + url;
                     // }
+                    console.log("doFetch(): DB is: ", db);
+                    console.log("doFetch(): URL is: ", url);
+                    console.log("doFetch(): opts is: ", opts);
                     if (opts.body && typeof opts.body !== 'string') {
                         opts.body = JSON.stringify(opts.body);
                     }
-                    return [4 /*yield*/, db.fetch(newurl, opts)];
+                    return [4 /*yield*/, pouchdb_fetch_1.fetch(newurl, opts)];
                 case 1:
                     res = _a.sent();
                     ok = res.ok;
@@ -129,7 +163,10 @@ function doFetch(db, url, opts) {
                         return [2 /*return*/, content];
                     }
                     else {
-                        err = new Error('fetch result not ok');
+                        text = "fetch result not ok";
+                        errText = content && typeof content.error === 'string' ? content.error : content && typeof content.message === 'string' ? content.message : typeof content === 'string' ? content : "unknown_error";
+                        finalErrorText = text + ": '" + errText + "'";
+                        err = new Error(finalErrorText);
                         throw err;
                     }
                     return [3 /*break*/, 4];

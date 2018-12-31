@@ -1,17 +1,18 @@
-import { AuthError           } from './utils' ;
-import { PDB                 } from './utils' ;
-import { LoginOptions        } from './utils' ;
-import { LoginResponse       } from './utils' ;
-import { BasicResponse       } from './utils' ;
-import { SessionResponse     } from './utils' ;
-import { doFetch             } from './utils' ;
-import { getBasicAuthHeaders } from './utils' ;
-
-import { assign, toPromise } from 'pouchdb-utils';
+import { AuthError           } from './utils'       ;
+import { PDB                 } from './utils'       ;
+import { LoginOptions        } from './utils'       ;
+import { LoginResponse       } from './utils'       ;
+import { BasicResponse       } from './utils'       ;
+import { SessionResponse     } from './utils'       ;
+import { doFetch             } from './utils'       ;
+import { getBasicAuthHeaders } from './utils'       ;
+import { assign, toPromise   } from 'pouchdb-utils' ;
+import { Headers             } from 'pouchdb-fetch' ;
 
 const logIn = async function(username:string, password:string, opts:LoginOptions):Promise<LoginResponse> {
   try {
     let db:PDB = this;
+    let options:any = opts != undefined ? opts : {};
     if(['http', 'https'].indexOf(db.type()) === -1) {
       // return callback(new AuthError('this plugin only works for the http/https adapter'));
       let err:Error = new Error("pouchdb-authentication plugin only works for the http/https adapter");
@@ -29,11 +30,14 @@ const logIn = async function(username:string, password:string, opts:LoginOptions
     }
   
     let url:string = '/_session';
+    let headers:Headers = getBasicAuthHeaders(db);
+    headers.append('Content-Type', 'application/json');
     let ajaxOpts:any = assign({
       method: 'POST',
-      headers: assign({'Content-Type': 'application/json'}, getBasicAuthHeaders(db)),
+      // headers: assign({'Content-Type': 'application/json'}, getBasicAuthHeaders(db)),
+      headers: headers,
       body: {name: username, password: password},
-    }, (opts as any).ajax || {});
+    }, options.ajax || {});
 
     let res:LoginResponse = await doFetch(db, url, ajaxOpts);
     return res;
@@ -45,11 +49,12 @@ const logIn = async function(username:string, password:string, opts:LoginOptions
 const logOut = async function (opts:LoginOptions):Promise<BasicResponse> {
   try {
     let db:PDB = this;
+    let options:any = opts != undefined ? opts : {};
     let url:string = '/_session';
     let ajaxOpts:any = assign({
       method: 'DELETE',
       headers: getBasicAuthHeaders(db),
-    }, (opts as any).ajax || {});
+    }, options.ajax || {});
   
     let res:BasicResponse = await doFetch(db, url, ajaxOpts);
     return res;

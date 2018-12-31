@@ -20,6 +20,7 @@ const getUsersDatabaseUrl = function():string {
 
 const updateUser = async function(db:PDB, user:PouchDBUserDoc, opts:PutUserOptions):Promise<BasicResponse> {
   try {
+    let options:any = opts != undefined ? opts : {};
     let reservedWords:string[] = [
       '_id',
       '_rev',
@@ -52,7 +53,7 @@ const updateUser = async function(db:PDB, user:PouchDBUserDoc, opts:PutUserOptio
       method: 'PUT',
       body: user,
       headers: getBasicAuthHeaders(db),
-    }, (opts as any).ajax || {});
+    }, options.ajax || {});
   
     let res:BasicResponse = await doFetch(db, url, ajaxOpts);
     return res;
@@ -64,6 +65,7 @@ const updateUser = async function(db:PDB, user:PouchDBUserDoc, opts:PutUserOptio
 const signUp = async function (username:string, password:string, opts:PutUserOptions):Promise<BasicResponse> {
   try {
     let db:PDB = this;
+    let options:any = opts != undefined ? opts : {};
     if(['http', 'https'].indexOf(db.type()) === -1) {
       let err:AuthError = new AuthError('This plugin only works for the http/https adapter. So you should use new PouchDB("http://mysite.com:5984/mydb") instead.');
       throw err;
@@ -84,7 +86,7 @@ const signUp = async function (username:string, password:string, opts:PutUserOpt
       _id: userId,
     };
   
-    let res:BasicResponse = await updateUser(db, user, opts);
+    let res:BasicResponse = await updateUser(db, user, options);
     return res;
   } catch(err) {
     throw err;
@@ -94,6 +96,7 @@ const signUp = async function (username:string, password:string, opts:PutUserOpt
 const getUser = async function(username:string, opts:LoginOptions):Promise<PouchDBUserDoc> {
   try {
     let db:PDB = this;
+    let options:any = opts != undefined ? opts : {};
     if(!username) {
       let err:AuthError = new AuthError('you must provide a username');
       throw err;
@@ -103,7 +106,7 @@ const getUser = async function(username:string, opts:LoginOptions):Promise<Pouch
     let ajaxOpts:any = assign({
       method: 'GET',
       headers: getBasicAuthHeaders(db),
-    }, (opts as any).ajax || {});
+    }, options.ajax || {});
   
     let res:PouchDBUserDoc = await doFetch(db, url, ajaxOpts);
     return res;
@@ -115,6 +118,7 @@ const getUser = async function(username:string, opts:LoginOptions):Promise<Pouch
 const putUser = async function (username:string, opts:PutUserOptions):Promise<BasicResponse> {
   try {
     let db:PDB = this;
+    let options:any = opts != undefined ? opts : {};
     if(['http', 'https'].indexOf(db.type()) === -1) {
       let err:AuthError = new AuthError('This plugin only works for the http/https adapter. So you should use new PouchDB("http://mysite.com:5984/mydb") instead.');
       throw err;
@@ -123,8 +127,8 @@ const putUser = async function (username:string, opts:PutUserOptions):Promise<Ba
       throw err;
     }
   
-    let user:PouchDBUserDoc = await db.getUser(username, opts);
-    let res:BasicResponse = await updateUser(db, user, opts);
+    let user:PouchDBUserDoc = await db.getUser(username, options);
+    let res:BasicResponse = await updateUser(db, user, options);
     return res;
   } catch(err) {
     throw err;
@@ -134,6 +138,7 @@ const putUser = async function (username:string, opts:PutUserOptions):Promise<Ba
 const deleteUser = async function(username:string, opts:LoginOptions):Promise<BasicResponse> {
   try {
     let db:PDB = this;
+    let options:any = opts != undefined ? opts : {};
     if (['http', 'https'].indexOf(db.type()) === -1) {
       let err:AuthError = new AuthError('This plugin only works for the http/https adapter. So you should use new PouchDB("http://mysite.com:5984/mydb") instead.');
       throw err;
@@ -142,12 +147,12 @@ const deleteUser = async function(username:string, opts:LoginOptions):Promise<Ba
       throw err;
     }
   
-    let user:PouchDBUserDoc = await db.getUser(username, opts);
+    let user:PouchDBUserDoc = await db.getUser(username, options);
     let url:string = '/_users/' + encodeURIComponent(user._id) + '?rev=' + user._rev;
     let ajaxOpts:any = assign({
       method: 'DELETE',
       headers: getBasicAuthHeaders(db),
-    }, (opts as any).ajax || {});
+    }, options.ajax || {});
     let res:BasicResponse = await doFetch(db, url, ajaxOpts);
     return res;
   } catch(err) {
@@ -158,6 +163,7 @@ const deleteUser = async function(username:string, opts:LoginOptions):Promise<Ba
 const changePassword = async function(username:string, password:string, opts:LoginOptions):Promise<BasicResponse> {
   try {
     let db:PDB = this;
+    let options:any = opts != undefined ? opts : {};
     if(['http', 'https'].indexOf(db.type()) === -1) {
       let err:AuthError = new AuthError('This plugin only works for the http/https adapter. So you should use new PouchDB("http://mysite.com:5984/mydb") instead.');
       throw err;
@@ -169,14 +175,14 @@ const changePassword = async function(username:string, password:string, opts:Log
       throw err;
     }
 
-    let user:PouchDBUserDoc = await db.getUser(username, opts);
+    let user:PouchDBUserDoc = await db.getUser(username, options);
     user.password = password;
     let url:string = '/_users/' + encodeURIComponent(user._id);
     let ajaxOpts:any = assign({
       method: 'PUT',
       headers: getBasicAuthHeaders(db),
       body: user,
-    }, (opts as any).ajax || {});
+    }, options.ajax || {});
     let res:BasicResponse = await doFetch(db, url, ajaxOpts);
     return res;
   } catch(err) {
@@ -188,10 +194,12 @@ const changeUsername = async function(oldUsername:string, newUsername:string, op
   try {
     
     let db:PDB = this;
+    let options:any = opts != undefined ? opts : {};
     let USERNAME_PREFIX:string = 'org.couchdb.user:';
     const fetch = async function(url:string, opts:LoginOptions):Promise<BasicResponse> {
       try {
-        let res:BasicResponse = await doFetch(db, url, opts);
+        let options:any = opts != undefined ? opts : {};
+        let res:BasicResponse = await doFetch(db, url, options);
         return res; 
       } catch(err) {
         throw err;
@@ -199,12 +207,13 @@ const changeUsername = async function(oldUsername:string, newUsername:string, op
     };
     const updateUser = async function(user:PouchDBUserDoc, opts:LoginOptions):Promise<BasicResponse> {
       try {
+        let options:any = opts != undefined ? opts : {};
         let url:string = '/_users/' + encodeURIComponent(user._id);
         let updateOpts:any = assign({
           method: 'PUT',
           headers: getBasicAuthHeaders(db),
           body: user,
-        }, (opts as any).ajax || {});
+        }, options.ajax || {});
     
         let res:BasicResponse = await fetch(url, updateOpts);
         return res;
@@ -212,7 +221,7 @@ const changeUsername = async function(oldUsername:string, newUsername:string, op
         throw err;
       }
     };
-    (opts as any).ajax = (opts as any).ajax || {};
+    options.ajax = options.ajax || {};
     if(['http', 'https'].indexOf(db.type()) === -1) {
       let err:AuthError = new AuthError('This plugin only works for the http/https adapter. So you should use new PouchDB("http://mysite.com:5984/mydb") instead.');
       throw err;
@@ -226,21 +235,21 @@ const changeUsername = async function(oldUsername:string, newUsername:string, op
       throw err;
     }
     try {
-      let res:PouchDBUserDoc = await db.getUser(newUsername, opts);
+      let res:PouchDBUserDoc = await db.getUser(newUsername, options);
       let err:AuthError = new AuthError('user already exists');
       err.taken = true;
       throw err;
     } catch(err) {
       try {
-        let user:PouchDBUserDoc = await db.getUser(oldUsername, opts);
+        let user:PouchDBUserDoc = await db.getUser(oldUsername, options);
         let newUser:PouchDBUserDoc = clone(user);
         delete newUser._rev;
         newUser._id = USERNAME_PREFIX + newUsername;
         newUser.name = newUsername;
-        newUser.roles = opts.roles || user.roles || [];
-        let res:BasicResponse = await updateUser(newUser, opts);
+        newUser.roles = options.roles || user.roles || [];
+        let res:BasicResponse = await updateUser(newUser, options);
         user._deleted = true;
-        res = await updateUser(user, opts);
+        res = await updateUser(user, options);
         return res;
       } catch(err) {
         throw err;

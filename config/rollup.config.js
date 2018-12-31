@@ -1,18 +1,22 @@
 import replace from 'rollup-plugin-replace';
 import buble from 'rollup-plugin-buble';
+import typescript from 'rollup-plugin-typescript';
 // import resolve from 'rollup-plugin-node-resolve';
 
 var external = Object.keys(require('../package.json').dependencies);
 
 export default config => {
   return {
-    input: 'compiled/index.js',
+    // input: 'compiled/index.js',
+    input: 'src/index.ts',
     output: {
       format: config.format,
-      file: config.dest
+      file: config.dest,
+      sourcemap: true
     },
     external: external,
     plugins: [
+      typescript(),
       buble(),
       // resolve({
       //   // use "module" field for ES6 module if possible

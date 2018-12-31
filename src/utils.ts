@@ -1,6 +1,6 @@
 import   * as PouchDB      from "pouchdb-core"          ;
 import { btoa             } from "pouchdb-binary-utils" ;
-import { Headers          } from "pouchdb-fetch"        ;
+import { Headers, fetch   } from "pouchdb-fetch"        ;
 import { assign, parseUri } from "pouchdb-utils"        ;
 
 interface AuthHeader {
@@ -137,10 +137,10 @@ interface PDB extends PouchDatabase {
   type():string;
 }
 
-const getBaseUrl:Function = function(db:PDB):string {
+const getBaseUrl = function(db:PDB):string {
   // Use PouchDB.defaults' prefix, if any
   let fullName:string;
-  if(db && db.prefix) {
+  if(db && db.prefix && ['http', 'https'].indexOf(db.type()) === -1) {
     let prefix:string = db.prefix;
     fullName = prefix + (prefix.endsWith('/') ? '' : '/') + db.name;
   } else {
@@ -154,10 +154,12 @@ const getBaseUrl:Function = function(db:PDB):string {
   let normalizedPath:string = path.endsWith('/') ? path.substr(0, -1) : path;
   let parentPath:string = normalizedPath.split('/').slice(0, -1).join('/');
 
-  return uri.protocol + '://' +
+  let baseURL:string = uri.protocol + '://' +
       uri.host +
       (uri.port ? ':' + uri.port : '') +
       parentPath;
+  console.log(`getBaseUrl(): Base URL is '${baseURL}'`);
+  return baseURL;
 }
 
 function getBasicAuthHeaders(db:PDB):Headers {
@@ -190,16 +192,49 @@ function getBasicAuthHeaders(db:PDB):Headers {
 async function doFetch(db:PDB, url:string, opts:any):Promise<any> {
   try {
     opts = assign(opts || {});
-    let newurl:string = url;
+    let newurl:string;
+    let baseURL:string;
+    let RESERVED_KEYS:string[] = [
+      '/_session',
+      '/_active_tasks',
+      '/_all_dbs',
+      '/_dbs_info',
+      '/_cluster_setup',
+      '/_db_updates',
+      '/_membership',
+      '/_replicate',
+      '/_scheduler',
+      '/_node',
+      '/_utils',
+      '/_up',
+      '/_uuids',
+      '/favicon.ico',
+    ];
+    if(RESERVED_KEYS.indexOf(url) > -1) {
+      baseURL = getBaseUrl(db);
+    } else {
+      baseURL = db.name;
+    }
+
+    if(url[0] === "/") {
+      newurl = baseURL + url;
+    } else {
+      newurl = baseURL + "/" + url;
+    }
     // if(url[0] === '/') {
     //   newurl = ".." + url;
     // }
+
+    console.log(`doFetch(): DB is: `, db);
+    console.log(`doFetch(): URL is: `, url);
+    console.log(`doFetch(): opts is: `, opts);
     
-    if (opts.body && typeof opts.body !== 'string') {
+    if(opts.body && typeof opts.body !== 'string') {
       opts.body = JSON.stringify(opts.body);
     }
   
-    let res:Response = await db.fetch(newurl, opts);
+    // let res:Response = await db.fetch(newurl, opts);
+    let res:Response = await fetch(newurl, opts);
     let ok:boolean = res.ok;
     let content:any = await res.json();
     // if(ok) {
@@ -212,7 +247,10 @@ async function doFetch(db:PDB, url:string, opts:any):Promise<any> {
     if(ok) {
       return content;
     } else {
-      let err:Error = new Error('fetch result not ok');
+      let text:string = "fetch result not ok";
+      let errText:string = content && typeof content.error === 'string' ? content.error : content && typeof content.message === 'string' ? content.message : typeof content === 'string' ? content : "unknown_error";
+      let finalErrorText:string =  `${text}: '${errText}'`;
+      let err:Error = new Error(finalErrorText);
       throw err;
     }
   } catch(err) {

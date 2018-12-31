@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var admins_1 = require("./admins");
 var authentication_1 = require("./authentication");
 var users_1 = require("./users");
-exports.PouchDBAuthPlugin = {
+var PouchDBAuthPlugin = {
     login: authentication_1.logIn,
     logIn: authentication_1.logIn,
     logout: authentication_1.logOut,
@@ -21,6 +21,8 @@ exports.PouchDBAuthPlugin = {
     changePassword: users_1.changePassword,
     changeUsername: users_1.changeUsername,
 };
+var plugin = PouchDBAuthPlugin;
+exports.plugin = plugin;
 // let var plugin:any = {};
 // plugin.login = logIn;
 // plugin.logIn = logIn;
@@ -61,7 +63,7 @@ exports.PouchDBAuthPlugin = {
 // // let plugin:any = PouchDBPlugin;
 // let plugin:PouchDBPlugin = new PouchDBPlugin();
 if (typeof window !== 'undefined' && window.PouchDB) {
-    window.PouchDB.plugin(exports.PouchDBAuthPlugin);
+    window.PouchDB.plugin(PouchDBAuthPlugin);
 }
 // export default plugin;
 // export plugin;
