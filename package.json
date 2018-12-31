@@ -1,6 +1,6 @@
 {
   "name": "pouchdb-authentication",
-  "version": "7.0.7",
+  "version": "7.0.8",
   "description": "PouchDB Authentication",
   "keywords": [
     "pouch",
@@ -30,7 +30,7 @@
     "compiled",
     "build"
   ],
-  "main": "compiled/index.js",
+  "main": "build/pouchdb-authentication.bundle.js",
   "jsnext:main": "build/pouchdb-authentication.bundle.js",
   "module": "build/pouchdb-authentication.bundle.js",
   "repository": {

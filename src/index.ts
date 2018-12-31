@@ -5,4 +5,4 @@ import { PouchDBAuthPlugin } from './plugin';
 // export * from "./utils";
 // export default plugin;
 
-export {PouchDBAuthPlugin};
+export default PouchDBAuthPlugin;
