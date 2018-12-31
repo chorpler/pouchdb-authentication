@@ -1,8 +1,9 @@
-import { PouchDBAuthPlugin } from './plugin';
-// export * from "./admins";
-// export * from "./authentication";
-// export * from "./users";
-// export * from "./utils";
+// import { PouchDBAuthPlugin } from './plugin';
+export * from "./admins";
+export * from "./authentication";
+export * from "./users";
+export * from "./utils";
+export * from "./plugin";
 // export default plugin;
 
-export default PouchDBAuthPlugin;
+// export default PouchDBAuthPlugin;
