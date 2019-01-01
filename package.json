@@ -1,6 +1,6 @@
 {
   "name": "pouchdb-authentication",
-  "version": "7.0.13",
+  "version": "7.0.14",
   "description": "PouchDB Authentication",
   "keywords": [
     "pouch",
@@ -28,7 +28,8 @@
     "dist",
     "lib",
     "compiled",
-    "build"
+    "build",
+    "types"
   ],
   "main": "compiled/index.js",
   "jsnext:main": "lib/index.es.js",
