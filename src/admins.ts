@@ -1,16 +1,16 @@
-import { AuthError           } from './utils'       ;
-import { PDB                 } from './utils'       ;
-import { PouchDBUserDoc      } from './utils'       ;
-import { PutUserOptions      } from './utils'       ;
-import { BasicResponse       } from './utils'       ;
-import { LoginOptions        } from './utils'       ;
-import { CouchNodeMembership } from './utils'       ;
-import { doFetch             } from './utils'       ;
-import { getBasicAuthHeaders } from './utils'       ;
-import { getBaseUrl          } from './utils'       ;
-import { assign              } from 'pouchdb-utils' ;
-import { toPromise           } from 'pouchdb-utils' ;
-
+import { AuthError              } from './utils'       ;
+import { PDB                    } from './utils'       ;
+import { PouchDBUserDoc         } from './utils'       ;
+import { PutUserOptions         } from './utils'       ;
+import { BasicResponse          } from './utils'       ;
+import { LoginOptions           } from './utils'       ;
+import { CouchNodeMembership    } from './utils'       ;
+import { doFetch                } from './utils'       ;
+import { getBasicAuthHeaders    } from './utils'       ;
+import { getBasicAuthHeadersFor } from './utils'       ;
+// import { getBaseUrl             } from './utils'       ;
+import { assign                 } from 'pouchdb-utils' ;
+// import { toPromise              } from 'pouchdb-utils' ;
 
 const getConfigUrl = function(db:PDB, nodeName?:string):string {
   return (nodeName ? '/_node/' + nodeName : '') + '/_config';
@@ -20,13 +20,16 @@ const getMembership = async function(opts:LoginOptions):Promise<CouchNodeMembers
   try {
     let db:PDB = this;
     let options:any = opts != undefined ? opts : {};
-    let dbURL:string = getBaseUrl(db);
-    let url:string = dbURL + '/_membership';
+    // let serverURL:string = getBaseUrl(db);
+    // let url:string = serverURL + '/_membership';
+    let url:string = '/_membership';
     let ajaxOpts:any = assign({
       method: 'GET',
       headers: getBasicAuthHeaders(db),
     }, options.ajax || {});
+    // console.log(`getMembership(): Fetching DB membership from URL '${url}'`);
     let res:CouchNodeMembership = await doFetch(db, url, ajaxOpts);
+    // console.log(`getMembership(): DB membership is:\n`, res);
     return res;
   } catch(err) {
     throw err;
@@ -48,7 +51,7 @@ const signUpAdmin = async function(username:string, password:string, opts:LoginO
       throw err;
     }
 
-    let membership:CouchNodeMembership
+    let membership:CouchNodeMembership;
     let nodeName:string;
     try {
       membership = await db.getMembership(opts);
@@ -63,11 +66,13 @@ const signUpAdmin = async function(username:string, password:string, opts:LoginO
       }
     }
     let configUrl:string = getConfigUrl(db, nodeName);
+    // let headers:Headers = getBasicAuthHeadersFor(username, password);
     let url:string = (options.configUrl || configUrl) + '/admins/' + encodeURIComponent(username);
     let ajaxOpts:any = assign({
       method: 'PUT',
       processData: false,
       headers: getBasicAuthHeaders(db),
+      // headers: headers,
       body: '"' + password + '"',
     }, options.ajax || {});
     let res:BasicResponse = await doFetch(db, url, ajaxOpts);

@@ -27,6 +27,8 @@ describe('urls', function () {
   it('Correct users database url using prefix without trailing slash', function () {
     var PouchWithPrefix = PouchDB.defaults({prefix: hostUrl});
     var db = new PouchWithPrefix(dbName);
+    // var db = new PouchDB(dbName, {prefix: hostUrl});
+    console.log(`PREFIXTEST1: DB is: `, db);
     var usersUrl = db.getUsersDatabaseUrl();
     usersUrl.should.equal(hostUrl + '/_users');
   });
@@ -34,6 +36,8 @@ describe('urls', function () {
   it('Correct users database url using prefix with trailing slash', function () {
     var PouchWithPrefix = PouchDB.defaults({prefix: hostUrl + '/'});
     var db = new PouchWithPrefix(dbName);
+    // var db = new PouchDB(dbName, {prefix: hostUrl + '/'});
+    console.log(`PREFIXTEST2: DB is: `, db);
     var usersUrl = db.getUsersDatabaseUrl();
     usersUrl.should.equal(hostUrl + '/_users');
   });

@@ -1,6 +1,6 @@
 {
   "name": "pouchdb-authentication",
-  "version": "7.0.14",
+  "version": "7.0.15",
   "description": "PouchDB Authentication",
   "keywords": [
     "pouch",
@@ -40,6 +40,7 @@
     "url": "git+https://github.com/chorpler/pouchdb-authentication.git"
   },
   "scripts": {
+    "clrscr": "node -e \"process.stdout.write('\\x1B[2J\\x1B[0f')\"",
     "compile": "tsc -p ./tsconfig.json",
     "clean": "rimraf lib dist build && mkdirp lib dist build",
     "declarations": "tsc -p ./tsconfig.json --emitDeclarationOnly",
@@ -56,7 +57,7 @@
     "prepublishOnly": "npm run build",
     "lint": "eslint bin/ compiled/ test/",
     "dev": "npm run test-local",
-    "test": "npm run rollup-cjs && node bin/run-test.js",
+    "test": "npm run clrscr && npm run rollup-cjs && node bin/run-test.js",
     "test-local": "cross-env CLIENT=local npm run test",
     "test-node": "cross-env CLIENT=node npm run test",
     "test-phantom": "cross-env CLIENT=phantom npm run test",
@@ -87,7 +88,8 @@
     "pouchdb-binary-utils": "^7.0.0",
     "pouchdb-core": "^7.0.0",
     "pouchdb-fetch": "^7.0.0",
-    "pouchdb-utils": "^7.0.0"
+    "pouchdb-utils": "^7.0.0",
+    "whatwg-fetch": "^3.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-rc.1",
@@ -140,8 +142,7 @@
     "uglifyjs-webpack-plugin": "^2.1.1",
     "watchify": "^3.9.0",
     "webpack": "^4.28.2",
-    "webpack-cli": "^3.1.2",
-    "whatwg-fetch": "^3.0.0"
+    "webpack-cli": "^3.1.2"
   },
   "devDependenciesComments": {
     "removed": {

@@ -50,9 +50,9 @@ function buildKarmaConf(client, serverHost) {
     browserify: {
       debug: true,
       transform: ['brfs'],
-      configure: function (bundle) {
-        bundle.add('node_modules/whatwg-fetch');
-      },
+      // configure: function (bundle) {
+      //   bundle.add('node_modules/whatwg-fetch');
+      // },
     },
     port: 9876,
     colors: true,

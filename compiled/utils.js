@@ -70,7 +70,7 @@ var getBaseUrl = function (db) {
         uri.host +
         (uri.port ? ':' + uri.port : '') +
         parentPath;
-    console.log("getBaseUrl(): Base URL is '" + baseURL + "'");
+    // console.log(`getBaseUrl(): Base URL is '${baseURL}'`);
     return baseURL;
 };
 exports.getBaseUrl = getBaseUrl;
@@ -139,9 +139,9 @@ function doFetch(db, url, opts) {
                     // if(url[0] === '/') {
                     //   newurl = ".." + url;
                     // }
-                    console.log("doFetch(): DB is: ", db);
-                    console.log("doFetch(): URL is: ", url);
-                    console.log("doFetch(): opts is: ", opts);
+                    // console.log(`doFetch(): DB is: `, db);
+                    // console.log(`doFetch(): URL is: `, url);
+                    // console.log(`doFetch(): opts is: `, opts);
                     if (opts.body && typeof opts.body !== 'string') {
                         opts.body = JSON.stringify(opts.body);
                     }

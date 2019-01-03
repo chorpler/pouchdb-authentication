@@ -1,13 +1,15 @@
-import { AuthError           } from './utils'       ;
-import { PDB                 } from './utils'       ;
-import { LoginOptions        } from './utils'       ;
-import { LoginResponse       } from './utils'       ;
-import { BasicResponse       } from './utils'       ;
-import { SessionResponse     } from './utils'       ;
-import { doFetch             } from './utils'       ;
-import { getBasicAuthHeaders } from './utils'       ;
-import { assign, toPromise   } from 'pouchdb-utils' ;
-import { Headers             } from 'pouchdb-fetch' ;
+import { AuthError              } from './utils'       ;
+import { AuthHeader             } from './utils'       ;
+import { PDB                    } from './utils'       ;
+import { LoginOptions           } from './utils'       ;
+import { LoginResponse          } from './utils'       ;
+import { BasicResponse          } from './utils'       ;
+import { SessionResponse        } from './utils'       ;
+import { doFetch                } from './utils'       ;
+import { getBasicAuthHeadersFor } from './utils'       ;
+import { getBasicAuthHeaders    } from './utils'       ;
+import { assign, toPromise      } from 'pouchdb-utils' ;
+import { Headers                } from 'pouchdb-fetch' ;
 
 const logIn = async function(username:string, password:string, opts:LoginOptions):Promise<LoginResponse> {
   try {
@@ -30,7 +32,7 @@ const logIn = async function(username:string, password:string, opts:LoginOptions
     }
   
     let url:string = '/_session';
-    let headers:Headers = getBasicAuthHeaders(db);
+    let headers:Headers = getBasicAuthHeadersFor(username, password);
     headers.append('Content-Type', 'application/json');
     let ajaxOpts:any = assign({
       method: 'POST',
@@ -40,13 +42,25 @@ const logIn = async function(username:string, password:string, opts:LoginOptions
     }, options.ajax || {});
 
     let res:LoginResponse = await doFetch(db, url, ajaxOpts);
+    if(db && db.__opts) {
+      if(db.__opts.auth) {
+        db.__opts.auth.username = username;
+        db.__opts.auth.password = password;
+      } else {
+        let auth:AuthHeader = {
+          username: username,
+          password: password,
+        };
+        db.__opts.auth = auth;
+      }
+    }
     return res;
   } catch(err) {
     throw err;
   }
 };
 
-const logOut = async function (opts:LoginOptions):Promise<BasicResponse> {
+const logOut = async function(opts:LoginOptions):Promise<BasicResponse> {
   try {
     let db:PDB = this;
     let options:any = opts != undefined ? opts : {};
@@ -57,9 +71,29 @@ const logOut = async function (opts:LoginOptions):Promise<BasicResponse> {
     }, options.ajax || {});
   
     let res:BasicResponse = await doFetch(db, url, ajaxOpts);
+    if(db && db.__opts && db.__opts.auth) {
+      delete db.__opts.auth;
+    }
     return res;
   } catch(err) {
-    throw err;
+    try {
+      // console.log(`logOut(): Caught error trying to log out, retrying:\n`, err);
+      let db:PDB = this;
+      let options:any = opts != undefined ? opts : {};
+      let url:string = '/_session';
+      let ajaxOpts:any = assign({
+        method: 'DELETE',
+        // headers: getBasicAuthHeaders(db),
+      }, options.ajax || {});
+    
+      let res:BasicResponse = await doFetch(db, url, ajaxOpts);
+      if(db && db.__opts && db.__opts.auth) {
+        delete db.__opts.auth;
+      }
+      return res;
+    } catch(err) {
+      throw err;
+    }
   }
 };
 

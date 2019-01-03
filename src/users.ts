@@ -15,7 +15,10 @@ import * as PouchDB from 'pouchdb-core';
 
 const getUsersDatabaseUrl = function():string {
   let db:PDB = this;
-  return getBaseUrl(db) + '/_users';
+  let userDBURL:string = getBaseUrl(db) + '/_users';
+  // console.log(`getUsersDatabaseUrl(): URL and DB is:\n`, userDBURL);
+  console.log(`getUsersDatabaseUrl(): DB is:`, db);
+  return userDBURL;
 };
 
 const updateUser = async function(db:PDB, user:PouchDBUserDoc, opts:PutUserOptions):Promise<BasicResponse> {
