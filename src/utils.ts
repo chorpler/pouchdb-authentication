@@ -147,8 +147,8 @@ const getBaseUrl = function(db:PDB):string {
   let fullName:string;
   let dbname:string = db.name;
   let type:string = db.type();
-  if(db && db.prefix && ['http', 'https'].indexOf(db.type()) === -1) {
-    let prefix:string = db.prefix;
+  let prefix:string = db && db.__opts && typeof db.__opts.prefix === 'string' ? db.__opts.prefix : '';
+  if(prefix) {
     fullName = prefix + (prefix.endsWith('/') ? '' : '/') + db.name;
   } else {
     fullName = db.name;

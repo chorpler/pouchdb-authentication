@@ -17,7 +17,7 @@ const getUsersDatabaseUrl = function():string {
   let db:PDB = this;
   let userDBURL:string = getBaseUrl(db) + '/_users';
   // console.log(`getUsersDatabaseUrl(): URL and DB is:\n`, userDBURL);
-  console.log(`getUsersDatabaseUrl(): DB is:`, db);
+  // console.log(`getUsersDatabaseUrl(): DB is:`, db);
   return userDBURL;
 };
 
