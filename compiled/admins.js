@@ -38,22 +38,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var utils_1 = require("./utils");
 var utils_2 = require("./utils");
 var utils_3 = require("./utils");
-var utils_4 = require("./utils");
+// import { getBaseUrl             } from './utils'       ;
 var pouchdb_utils_1 = require("pouchdb-utils");
+// import { toPromise              } from 'pouchdb-utils' ;
 var getConfigUrl = function (db, nodeName) {
     return (nodeName ? '/_node/' + nodeName : '') + '/_config';
 };
 var getMembership = function (opts) {
     return __awaiter(this, void 0, void 0, function () {
-        var db, options, dbURL, url, ajaxOpts, res, err_1;
+        var db, options, url, ajaxOpts, res, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
                     db = this;
                     options = opts != undefined ? opts : {};
-                    dbURL = utils_4.getBaseUrl(db);
-                    url = dbURL + '/_membership';
+                    url = '/_membership';
                     ajaxOpts = pouchdb_utils_1.assign({
                         method: 'GET',
                         headers: utils_3.getBasicAuthHeaders(db),
@@ -61,6 +61,7 @@ var getMembership = function (opts) {
                     return [4 /*yield*/, utils_2.doFetch(db, url, ajaxOpts)];
                 case 1:
                     res = _a.sent();
+                    // console.log(`getMembership(): DB membership is:\n`, res);
                     return [2 /*return*/, res];
                 case 2:
                     err_1 = _a.sent();
@@ -120,6 +121,7 @@ var signUpAdmin = function (username, password, opts) {
                         method: 'PUT',
                         processData: false,
                         headers: utils_3.getBasicAuthHeaders(db),
+                        // headers: headers,
                         body: '"' + password + '"',
                     }, options.ajax || {});
                     return [4 /*yield*/, utils_2.doFetch(db, url, ajaxOpts)];

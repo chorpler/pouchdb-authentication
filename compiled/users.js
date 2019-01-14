@@ -43,7 +43,10 @@ var pouchdb_utils_1 = require("pouchdb-utils");
 var pouchdb_utils_2 = require("pouchdb-utils");
 var getUsersDatabaseUrl = function () {
     var db = this;
-    return utils_4.getBaseUrl(db) + '/_users';
+    var userDBURL = utils_4.getBaseUrl(db) + '/_users';
+    // console.log(`getUsersDatabaseUrl(): URL and DB is:\n`, userDBURL);
+    // console.log(`getUsersDatabaseUrl(): DB is:`, db);
+    return userDBURL;
 };
 exports.getUsersDatabaseUrl = getUsersDatabaseUrl;
 var updateUser = function (db, user, opts) {

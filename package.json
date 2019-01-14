@@ -1,6 +1,6 @@
 {
   "name": "pouchdb-authentication",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "description": "PouchDB Authentication",
   "keywords": [
     "pouch",
@@ -51,7 +51,7 @@
     "browserify:webpack": "browserify -t brfs -p bundle-collapser/plugin -s PouchAuthentication build/pouchdb-authentication.bundle.js > dist/pouchdb.authentication.js",
     "browserify": "npm run browserify:rollup",
     "minify": "uglifyjs -mc < dist/pouchdb.authentication.js > dist/pouchdb.authentication.min.js",
-    "build": "npm-run-all clean compile webpack browserify minify",
+    "build": "npm run build:prod",
     "build:dev": "npm-run-all clean compile rollup browserify minify",
     "build:prod": "npm-run-all clean compile rollup browserify minify",
     "prepublishOnly": "npm run build",

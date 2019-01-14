@@ -37,10 +37,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var utils_1 = require("./utils");
 var utils_2 = require("./utils");
+var utils_3 = require("./utils");
 var pouchdb_utils_1 = require("pouchdb-utils");
 var logIn = function (username, password, opts) {
     return __awaiter(this, void 0, void 0, function () {
-        var db, options, err, err, err, url, headers, ajaxOpts, res, err_1;
+        var db, options, err, err, err, url, headers, ajaxOpts, res, auth, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -60,7 +61,7 @@ var logIn = function (username, password, opts) {
                         throw err;
                     }
                     url = '/_session';
-                    headers = utils_2.getBasicAuthHeaders(db);
+                    headers = utils_2.getBasicAuthHeadersFor(username, password);
                     headers.append('Content-Type', 'application/json');
                     ajaxOpts = pouchdb_utils_1.assign({
                         method: 'POST',
@@ -71,6 +72,19 @@ var logIn = function (username, password, opts) {
                     return [4 /*yield*/, utils_1.doFetch(db, url, ajaxOpts)];
                 case 1:
                     res = _a.sent();
+                    if (db && db.__opts) {
+                        if (db.__opts.auth) {
+                            db.__opts.auth.username = username;
+                            db.__opts.auth.password = password;
+                        }
+                        else {
+                            auth = {
+                                username: username,
+                                password: password,
+                            };
+                            db.__opts.auth = auth;
+                        }
+                    }
                     return [2 /*return*/, res];
                 case 2:
                     err_1 = _a.sent();
@@ -83,26 +97,48 @@ var logIn = function (username, password, opts) {
 exports.logIn = logIn;
 var logOut = function (opts) {
     return __awaiter(this, void 0, void 0, function () {
-        var db, options, url, ajaxOpts, res, err_2;
+        var db, options, url, ajaxOpts, res, err_2, db, options, url, ajaxOpts, res, err_3;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 2, , 3]);
+                    _a.trys.push([0, 2, , 7]);
                     db = this;
                     options = opts != undefined ? opts : {};
                     url = '/_session';
                     ajaxOpts = pouchdb_utils_1.assign({
                         method: 'DELETE',
-                        headers: utils_2.getBasicAuthHeaders(db),
+                        headers: utils_3.getBasicAuthHeaders(db),
                     }, options.ajax || {});
                     return [4 /*yield*/, utils_1.doFetch(db, url, ajaxOpts)];
                 case 1:
                     res = _a.sent();
+                    if (db && db.__opts && db.__opts.auth) {
+                        delete db.__opts.auth;
+                    }
                     return [2 /*return*/, res];
                 case 2:
                     err_2 = _a.sent();
-                    throw err_2;
-                case 3: return [2 /*return*/];
+                    _a.label = 3;
+                case 3:
+                    _a.trys.push([3, 5, , 6]);
+                    db = this;
+                    options = opts != undefined ? opts : {};
+                    url = '/_session';
+                    ajaxOpts = pouchdb_utils_1.assign({
+                        method: 'DELETE',
+                    }, options.ajax || {});
+                    return [4 /*yield*/, utils_1.doFetch(db, url, ajaxOpts)];
+                case 4:
+                    res = _a.sent();
+                    if (db && db.__opts && db.__opts.auth) {
+                        delete db.__opts.auth;
+                    }
+                    return [2 /*return*/, res];
+                case 5:
+                    err_3 = _a.sent();
+                    throw err_3;
+                case 6: return [3 /*break*/, 7];
+                case 7: return [2 /*return*/];
             }
         });
     });
@@ -110,7 +146,7 @@ var logOut = function (opts) {
 exports.logOut = logOut;
 var getSession = function () {
     return __awaiter(this, void 0, void 0, function () {
-        var db, url, ajaxOpts, res, err_3;
+        var db, url, ajaxOpts, res, err_4;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -119,15 +155,15 @@ var getSession = function () {
                     url = '/_session';
                     ajaxOpts = {
                         method: 'GET',
-                        headers: utils_2.getBasicAuthHeaders(db),
+                        headers: utils_3.getBasicAuthHeaders(db),
                     };
                     return [4 /*yield*/, utils_1.doFetch(db, url, ajaxOpts)];
                 case 1:
                     res = _a.sent();
                     return [2 /*return*/, res];
                 case 2:
-                    err_3 = _a.sent();
-                    throw err_3;
+                    err_4 = _a.sent();
+                    throw err_4;
                 case 3: return [2 /*return*/];
             }
         });

@@ -357,4 +357,5 @@ export {
   SessionResponse,
   PutUserOptions,
   CouchNodeMembership,
+  parseUri,
 };

@@ -3,7 +3,7 @@ var PouchHttp = require('pouchdb-adapter-http');
 var Authentication = require('../lib');
 
 PouchDB.plugin(PouchHttp);
-PouchDB.plugin(Authentication);
+PouchDB.plugin(Authentication.default);
 
 var {fetch} = require('pouchdb-fetch');
 

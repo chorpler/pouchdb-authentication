@@ -47,15 +47,38 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __values = (this && this.__values) || function (o) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+    if (m) return m.call(o);
+    return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var PouchDB = __importStar(require("pouchdb-core"));
+// import PouchDB from 'pouchdb-core';
 var pouchdb_binary_utils_1 = require("pouchdb-binary-utils");
 var pouchdb_fetch_1 = require("pouchdb-fetch");
 var pouchdb_utils_1 = require("pouchdb-utils");
+exports.parseUri = pouchdb_utils_1.parseUri;
+var StaticPouch = PouchDB;
 var getBaseUrl = function (db) {
     // Use PouchDB.defaults' prefix, if any
     var fullName;
-    if (db && db.prefix && ['http', 'https'].indexOf(db.type()) === -1) {
-        var prefix = db.prefix;
+    var dbname = db.name;
+    var type = db.type();
+    var prefix = db && db.__opts && typeof db.__opts.prefix === 'string' ? db.__opts.prefix : '';
+    if (prefix) {
         fullName = prefix + (prefix.endsWith('/') ? '' : '/') + db.name;
     }
     else {
@@ -74,8 +97,19 @@ var getBaseUrl = function (db) {
     return baseURL;
 };
 exports.getBaseUrl = getBaseUrl;
+function getBasicAuthHeadersFor(username, password) {
+    var authString = username + ":" + password;
+    var token = pouchdb_binary_utils_1.btoa(decodeURIComponent(encodeURIComponent(authString)));
+    var headers = new pouchdb_fetch_1.Headers();
+    headers.set('Authorization', 'Basic ' + token);
+    return headers;
+}
+exports.getBasicAuthHeadersFor = getBasicAuthHeadersFor;
 function getBasicAuthHeaders(db) {
     var auth;
+    if (!db) {
+        return new pouchdb_fetch_1.Headers();
+    }
     if (db.__opts && db.__opts.auth) {
         auth = db.__opts.auth;
     }
@@ -91,24 +125,28 @@ function getBasicAuthHeaders(db) {
     if (!auth) {
         return new pouchdb_fetch_1.Headers();
     }
-    var str = auth.username + ':' + auth.password;
-    var token = pouchdb_binary_utils_1.btoa(decodeURIComponent(encodeURIComponent(str)));
-    var headers = new pouchdb_fetch_1.Headers();
-    headers.set('Authorization', 'Basic ' + token);
-    return headers;
+    return getBasicAuthHeadersFor(auth.username, auth.password);
+    // let str:string = auth.username + ':' + auth.password;
+    // let token:string = btoa(decodeURIComponent(encodeURIComponent(str)));
+    // let headers:Headers = new Headers();
+    // headers.set('Authorization', 'Basic ' + token);
+    // return headers;
 }
 exports.getBasicAuthHeaders = getBasicAuthHeaders;
 function doFetch(db, url, opts) {
     return __awaiter(this, void 0, void 0, function () {
-        var newurl, baseURL, RESERVED_KEYS, res, ok, content, text, errText, finalErrorText, err, err_1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        var e_1, _a, full, newurl, baseURL, res, RESERVED_KEYS, RESERVED_KEYS_1, RESERVED_KEYS_1_1, key, dbname, ok, content, err_1;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
-                    _a.trys.push([0, 3, , 4]);
+                    _b.trys.push([0, 6, , 7]);
                     opts = pouchdb_utils_1.assign(opts || {});
+                    full = true;
                     newurl = void 0;
                     baseURL = void 0;
+                    res = void 0;
                     RESERVED_KEYS = [
+                        '/_users',
                         '/_session',
                         '/_active_tasks',
                         '/_all_dbs',
@@ -124,11 +162,31 @@ function doFetch(db, url, opts) {
                         '/_uuids',
                         '/favicon.ico',
                     ];
-                    if (RESERVED_KEYS.indexOf(url) > -1) {
-                        baseURL = getBaseUrl(db);
+                    try {
+                        // if(RESERVED_KEYS.indexOf(url) > -1) {
+                        //   baseURL = getBaseUrl(db);
+                        // } else {
+                        //   baseURL = db.name;
+                        // }
+                        for (RESERVED_KEYS_1 = __values(RESERVED_KEYS), RESERVED_KEYS_1_1 = RESERVED_KEYS_1.next(); !RESERVED_KEYS_1_1.done; RESERVED_KEYS_1_1 = RESERVED_KEYS_1.next()) {
+                            key = RESERVED_KEYS_1_1.value;
+                            if (url.includes(key)) {
+                                full = false;
+                            }
+                        }
+                    }
+                    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                    finally {
+                        try {
+                            if (RESERVED_KEYS_1_1 && !RESERVED_KEYS_1_1.done && (_a = RESERVED_KEYS_1.return)) _a.call(RESERVED_KEYS_1);
+                        }
+                        finally { if (e_1) throw e_1.error; }
+                    }
+                    if (full) {
+                        baseURL = db.name;
                     }
                     else {
-                        baseURL = db.name;
+                        baseURL = getBaseUrl(db);
                     }
                     if (url[0] === "/") {
                         newurl = baseURL + url;
@@ -136,22 +194,27 @@ function doFetch(db, url, opts) {
                     else {
                         newurl = baseURL + "/" + url;
                     }
-                    // if(url[0] === '/') {
-                    //   newurl = ".." + url;
-                    // }
+                    dbname = db.name;
+                    // newurl = url;
                     // console.log(`doFetch(): DB is: `, db);
-                    // console.log(`doFetch(): URL is: `, url);
-                    // console.log(`doFetch(): opts is: `, opts);
                     if (opts.body && typeof opts.body !== 'string') {
                         opts.body = JSON.stringify(opts.body);
                     }
-                    return [4 /*yield*/, pouchdb_fetch_1.fetch(newurl, opts)];
+                    if (!full) return [3 /*break*/, 2];
+                    return [4 /*yield*/, db.fetch(url, opts)];
                 case 1:
-                    res = _a.sent();
+                    // let res:Response = await db.fetch(newurl, opts);
+                    res = _b.sent();
+                    return [3 /*break*/, 4];
+                case 2: return [4 /*yield*/, fetch(newurl, opts)];
+                case 3:
+                    res = _b.sent();
+                    _b.label = 4;
+                case 4:
                     ok = res.ok;
                     return [4 /*yield*/, res.json()];
-                case 2:
-                    content = _a.sent();
+                case 5:
+                    content = _b.sent();
                     // if(ok) {
                     //   callback(null, content);
                     // } else {
@@ -163,22 +226,26 @@ function doFetch(db, url, opts) {
                         return [2 /*return*/, content];
                     }
                     else {
-                        text = "fetch result not ok";
-                        errText = content && typeof content.error === 'string' ? content.error : content && typeof content.message === 'string' ? content.message : typeof content === 'string' ? content : "unknown_error";
-                        finalErrorText = text + ": '" + errText + "'";
-                        err = new Error(finalErrorText);
-                        throw err;
+                        // let text:string = "fetch result not ok";
+                        // let errText:string = content && typeof content.error === 'string' ? content.error : content && typeof content.message === 'string' ? content.message : typeof content === 'string' ? content : "unknown_error";
+                        // let finalErrorText:string =  `${text}: '${errText}'`;
+                        // let err:Error = new Error(finalErrorText);
+                        // let err:Error = new Error(errText);
+                        // throw err;
+                        content.name = content.error;
+                        throw content;
                     }
-                    return [3 /*break*/, 4];
-                case 3:
-                    err_1 = _a.sent();
+                    return [3 /*break*/, 7];
+                case 6:
+                    err_1 = _b.sent();
+                    // console.log(`doFetch(): Fetch error:\n`, err);
                     if (err_1 && err_1.name === 'unknown_error') {
                         err_1.message = (err_1.message + ' ' || '') +
                             'Unknown error!  Did you remember to enable CORS?';
                     }
                     // callback(err);
                     throw err_1;
-                case 4: return [2 /*return*/];
+                case 7: return [2 /*return*/];
             }
         });
     });
