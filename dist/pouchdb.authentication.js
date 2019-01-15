@@ -3,7 +3,7 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var PouchDB = require(9);
+require(9);
 var pouchdbBinaryUtils = require(6);
 var pouchdbFetch = require(13);
 var pouchdbUtils = require(16);
@@ -116,8 +116,8 @@ var debuglog = function () {
         args[_i] = arguments$1[_i];
     }
     // if(window && (window.PouchDB && window.PouchDB.debug && typeof window.PouchDB.debug.enabled === 'function' && window.PouchDB.debug.enabled('pouchdb:authentication'))) {
-    if (window && window.pouchdbauthenticationdebug) {
-        PouchDB.emit('debug', __spread(['authentication'], args));
+    if (window && window.PouchDB && typeof window.PouchDB.emit === 'function' && window.pouchdbauthenticationdebug) {
+        window.PouchDB.emit('debug', __spread(['authentication'], args));
         console.log.apply(console, __spread(["PDBAUTH: "], args));
     }
 };

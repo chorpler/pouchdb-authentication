@@ -146,8 +146,8 @@ declare const window:any;
 
 const debuglog = function(...args) {
   // if(window && (window.PouchDB && window.PouchDB.debug && typeof window.PouchDB.debug.enabled === 'function' && window.PouchDB.debug.enabled('pouchdb:authentication'))) {
-  if(window && window.pouchdbauthenticationdebug) {
-    PouchDB.emit('debug', ['authentication', ...args]);
+  if(window && window.PouchDB && typeof window.PouchDB.emit === 'function' && window.pouchdbauthenticationdebug) {
+    window.PouchDB.emit('debug', ['authentication', ...args]);
     console.log("PDBAUTH: ", ...args);
   }
 }
