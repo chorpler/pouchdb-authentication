@@ -47,6 +47,26 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spread = (this && this.__spread) || function () {
+    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
+    return ar;
+};
 var __values = (this && this.__values) || function (o) {
     var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
     if (m) return m.call(o);
@@ -72,11 +92,22 @@ var pouchdb_fetch_1 = require("pouchdb-fetch");
 var pouchdb_utils_1 = require("pouchdb-utils");
 exports.parseUri = pouchdb_utils_1.parseUri;
 var StaticPouch = PouchDB;
+var debuglog = function () {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+    }
+    // if(window && (window.PouchDB && window.PouchDB.debug && typeof window.PouchDB.debug.enabled === 'function' && window.PouchDB.debug.enabled('pouchdb:authentication'))) {
+    if (window && window.pouchdbauthenticationdebug) {
+        PouchDB.emit('debug', __spread(['authentication'], args));
+        console.log.apply(console, __spread(["PDBAUTH: "], args));
+    }
+};
 var getBaseUrl = function (db) {
     // Use PouchDB.defaults' prefix, if any
     var fullName;
     var dbname = db.name;
-    var type = db.type();
+    // let type:string = db.type();
     var prefix = db && db.__opts && typeof db.__opts.prefix === 'string' ? db.__opts.prefix : '';
     if (prefix) {
         fullName = prefix + (prefix.endsWith('/') ? '' : '/') + db.name;
@@ -89,11 +120,11 @@ var getBaseUrl = function (db) {
     var path = uri.path;
     var normalizedPath = path.endsWith('/') ? path.substr(0, -1) : path;
     var parentPath = normalizedPath.split('/').slice(0, -1).join('/');
-    var baseURL = uri.protocol + '://' +
-        uri.host +
-        (uri.port ? ':' + uri.port : '') +
-        parentPath;
+    var portString = uri.port ? ":" + uri.port : '';
+    var baseURL = uri.protocol + "://" + uri.host + portString + parentPath;
+    // let baseURL:string = uri.protocol + '://' + uri.host + (uri.port ? ':' + uri.port : '') + parentPath;
     // console.log(`getBaseUrl(): Base URL is '${baseURL}'`);
+    debuglog("getBaseUrl(): Base URL is '" + baseURL + "'");
     return baseURL;
 };
 exports.getBaseUrl = getBaseUrl;
@@ -211,6 +242,7 @@ function doFetch(db, url, opts) {
                     res = _b.sent();
                     _b.label = 4;
                 case 4:
+                    debuglog("doFetch(): Response is: ", res);
                     ok = res.ok;
                     return [4 /*yield*/, res.json()];
                 case 5:

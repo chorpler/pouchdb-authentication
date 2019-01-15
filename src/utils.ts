@@ -142,11 +142,21 @@ interface PDB extends PouchDatabase {
   type():string;
 }
 
+declare const window:any;
+
+const debuglog = function(...args) {
+  // if(window && (window.PouchDB && window.PouchDB.debug && typeof window.PouchDB.debug.enabled === 'function' && window.PouchDB.debug.enabled('pouchdb:authentication'))) {
+  if(window && window.pouchdbauthenticationdebug) {
+    PouchDB.emit('debug', ['authentication', ...args]);
+    console.log("PDBAUTH: ", ...args);
+  }
+}
+
 const getBaseUrl = function(db:PDB):string {
   // Use PouchDB.defaults' prefix, if any
   let fullName:string;
   let dbname:string = db.name;
-  let type:string = db.type();
+  // let type:string = db.type();
   let prefix:string = db && db.__opts && typeof db.__opts.prefix === 'string' ? db.__opts.prefix : '';
   if(prefix) {
     fullName = prefix + (prefix.endsWith('/') ? '' : '/') + db.name;
@@ -160,12 +170,12 @@ const getBaseUrl = function(db:PDB):string {
   let path:string = uri.path;
   let normalizedPath:string = path.endsWith('/') ? path.substr(0, -1) : path;
   let parentPath:string = normalizedPath.split('/').slice(0, -1).join('/');
-
-  let baseURL:string = uri.protocol + '://' +
-      uri.host +
-      (uri.port ? ':' + uri.port : '') +
-      parentPath;
+  let portString:string = uri.port ? `:${uri.port}` : '';
+  let baseURL:string = `${uri.protocol}://${uri.host}${portString}${parentPath}`;
+  // let baseURL:string = uri.protocol + '://' + uri.host + (uri.port ? ':' + uri.port : '') + parentPath;
+  
   // console.log(`getBaseUrl(): Base URL is '${baseURL}'`);
+  debuglog(`getBaseUrl(): Base URL is '${baseURL}'`);
   return baseURL;
 }
 
@@ -275,6 +285,7 @@ async function doFetch(db:PDB, url:string, opts:any):Promise<any> {
     } else {
       res = await fetch(newurl, opts);
     }
+    debuglog(`doFetch(): Response is: `, res);
     // let res:Response = await db.fetch(newurl, opts);
     // let res:Response = await StaticPouch.fetch(newurl, opts);
     let ok:boolean = res.ok;
