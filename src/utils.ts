@@ -307,8 +307,24 @@ async function doFetch(db:PDB, url:string, opts:any):Promise<any> {
       // let err:Error = new Error(finalErrorText);
       // let err:Error = new Error(errText);
       // throw err;
-      content.name = content.error;
-      throw content;
+      let msg:string = res && typeof res.statusText === 'string' ? res.statusText : "unknown_error";
+      let status:number = res && typeof res.status === 'number' ? res.status : 0;
+      let err:AuthError = new AuthError(msg);
+      err.status = status;
+      if(content) {
+        if(typeof content.error === 'string') {
+          err.name = content.error;
+          err.error = content.error;
+        }
+        if(typeof content.reason === 'string') {
+          err.reason = content.reason;
+        }
+      }
+      //  else if(msg === 'unknown_error') {
+      //   err.name = msg;
+      // }
+      // content.name = content.error;
+      throw err;
     }
   } catch(err) {
     // console.log(`doFetch(): Fetch error:\n`, err);
@@ -325,8 +341,11 @@ class AuthError extends Error {
   public status:number = 400;
   public name:string = "authentication_error";
   public message:string = "";
-  public error:boolean = true;
+  public error:string|boolean = true;
   public taken:boolean = false;
+  public reason?:string = "";
+  // public error?:string = "";
+  public 
   constructor(msg?:string) {
     super(msg);
     if(msg) {
