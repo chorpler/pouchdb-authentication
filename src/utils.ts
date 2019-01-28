@@ -147,7 +147,7 @@ const debuglog = function(...args) {
   if(window && window.PouchDB && typeof window.PouchDB.emit === 'function') {
     window.PouchDB.emit('debug', ['authentication', ...args]);
   }
-  if(window && window.pouchdbauthenticationdebug) {
+  if(window && window.pouchdbauthenticationdebug === true) {
     console.log(...args);
   }
 }
@@ -167,11 +167,11 @@ const debugerr = function(...args) {
     window.PouchDB.emit('debug', ['authentication', "ERROR", ...args]);
     window.PouchDB.emit('debug', ['authentication', "STRERROR", strError]);
   }
-  if(window && window.pouchdbauthenticationdebug) {
+  if(window && window.pouchdbauthenticationdebug === true) {
     console.log("PDBAUTH ERROR:", strError);
     console.error(...args);
   }
-  }
+}
   // let err = [...args] || [{}];
 
 const getBaseUrl = function(db:PDB):string {

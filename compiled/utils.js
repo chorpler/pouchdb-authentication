@@ -113,10 +113,12 @@ var debuglog = function () {
     //   window.PouchDB.emit('debug', ['authentication', ...args]);
     //   console.log(...args);
     // }
-    if (window && window.PouchDB && typeof window.PouchDB.emit === 'function' && window.pouchdbauthenticationdebug) {
+    if (window && window.PouchDB && typeof window.PouchDB.emit === 'function') {
         window.PouchDB.emit('debug', __spread(['authentication'], args));
     }
-    console.log.apply(console, __spread(args));
+    if (window && window.pouchdbauthenticationdebug === true) {
+        console.log.apply(console, __spread(args));
+    }
 };
 var debugerr = function () {
     var args = [];
@@ -128,15 +130,21 @@ var debugerr = function () {
     //   window.PouchDB.emit('debug', ['authentication', ...args]);
     //   console.error(...args);
     // }
-    if (window && window.PouchDB && typeof window.PouchDB.emit === 'function' && window.pouchdbauthenticationdebug) {
-        window.PouchDB.emit('debug', __spread(['authentication'], args));
+    var err, strError;
+    if (window && (window.pouchdbauthenticationdebug || (window.PouchDB && typeof window.PouchDB.emit === 'function'))) {
+        err = __assign({}, args);
+        strError = JSON.stringify(err);
     }
-    // let err = [...args] || [{}];
-    var err = __assign({}, args);
-    var strError = JSON.stringify(err);
-    console.log("PDBAUTH ERROR:", strError);
-    console.error.apply(console, __spread(args));
+    if (window && window.PouchDB && typeof window.PouchDB.emit === 'function') {
+        window.PouchDB.emit('debug', __spread(['authentication', "ERROR"], args));
+        window.PouchDB.emit('debug', ['authentication', "STRERROR", strError]);
+    }
+    if (window && window.pouchdbauthenticationdebug === true) {
+        console.log("PDBAUTH ERROR:", strError);
+        console.error.apply(console, __spread(args));
+    }
 };
+// let err = [...args] || [{}];
 var getBaseUrl = function (db) {
     // Use PouchDB.defaults' prefix, if any
     var fullName;
@@ -267,19 +275,19 @@ function doFetch(db, url, opts) {
                     }
                     if (!full) return [3 /*break*/, 2];
                     // let res:Response = await db.fetch(newurl, opts);
-                    debuglog("PDBAUTH: doFetch(): Fetching from url '" + url + "' with options:", opts);
+                    debuglog("doFetch(): Fetching from url '" + url + "' with options:", opts);
                     return [4 /*yield*/, db.fetch(url, opts)];
                 case 1:
                     res = _b.sent();
                     return [3 /*break*/, 4];
                 case 2:
-                    debuglog("PDBAUTH: doFetch(): Fetching from url '" + newurl + "' with options:", opts);
+                    debuglog("doFetch(): Fetching from url '" + newurl + "' with options:", opts);
                     return [4 /*yield*/, fetch(newurl, opts)];
                 case 3:
                     res = _b.sent();
                     _b.label = 4;
                 case 4:
-                    debuglog("PDBAUTH: doFetch(): Response is: ", res);
+                    debuglog("doFetch(): Response is: ", res);
                     ok = res.ok;
                     return [4 /*yield*/, res.json()];
                 case 5:
@@ -353,18 +361,18 @@ var AuthError = /** @class */ (function (_super) {
         if (!_this.reason) {
             _this.reason = _this.message;
         }
+        _this.toJSON = function () {
+            // debuglog(`AuthError.toJSON() called`);
+            var out = Object.assign({}, _this);
+            out.message = _this.message + "";
+            // console.log(`AuthError.toJSON() called. Returning:`, out);
+            return out;
+        };
+        _this.toJson = function () {
+            return _this.toJSON();
+        };
         return _this;
     }
-    AuthError.prototype.toJSON = function () {
-        // debuglog(`AuthError.toJSON() called`);
-        var out = Object.assign({}, this);
-        out.message = this.message + "";
-        console.log("AuthError.toJSON() called. Returning:", out);
-        return out;
-    };
-    AuthError.prototype.toJson = function () {
-        return this.toJSON();
-    };
     return AuthError;
 }(Error));
 exports.AuthError = AuthError;
