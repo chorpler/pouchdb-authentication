@@ -1,9 +1,11 @@
 var PouchDB = require('pouchdb-core');
 var PouchHttp = require('pouchdb-adapter-http');
 var Authentication = require('../lib');
+var PouchDBDebug = require('pouchdb-debug');
 
 PouchDB.plugin(PouchHttp);
 PouchDB.plugin(Authentication.default);
+PouchDB.plugin(PouchDBDebug);
 
 var {fetch} = require('pouchdb-fetch');
 
@@ -16,6 +18,12 @@ module.exports.TestPouch = PouchDB.defaults({
 });
 
 module.exports.getConfig = function () {
+  if (typeof window !== 'undefined') {
+    window['pouchdbauthenticationdebug'] = false;
+    window['pouchdbauthenticationplugin'] = Authentication;
+    window['AuthError'] = Authentication.AuthError;
+    window['PouchDB'] = PouchDB;
+  }
   return typeof window !== 'undefined' ? window.__karma__.config : global.__testConfig__;
 };
 

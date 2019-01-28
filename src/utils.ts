@@ -63,8 +63,7 @@ interface Database<Content extends {} = {}> extends PouchDB.Static {
      * Log in an existing user.
      * Throws an error if the user doesn't exist yet, the password is wrong, the HTTP server is unreachable, or a meteor struck your computer.
      */
-  logIn(username: string, password: string,
-        options?: PouchDB.Core.Options): Promise<LoginResponse>;
+  logIn(username: string, password: string, options?: PouchDB.Core.Options): Promise<LoginResponse>;
 
   /**
    * Logs out whichever user is currently logged in.
@@ -88,8 +87,7 @@ interface Database<Content extends {} = {}> extends PouchDB.Static {
    * Throws an error if the user already exists or if the username is invalid, or if some network error occurred.
    * CouchDB has some limitations on user names (e.g. they cannot contain the character `:`).
    */
-  signUp(username: string, password: string,
-        options?: PutUserOptions): Promise<PouchDB.Core.Response>;
+  signUp(username: string, password: string, options?: PutUserOptions): Promise<PouchDB.Core.Response>;
 
   /**
    * Returns the user document associated with a username.
@@ -107,26 +105,22 @@ interface Database<Content extends {} = {}> extends PouchDB.Static {
   /**
    * Delete a user.
    */
-  deleteUser(username: string,
-            options?: PouchDB.Core.Options): Promise<PouchDB.Core.Response>;
+  deleteUser(username: string, options?: PouchDB.Core.Options): Promise<PouchDB.Core.Response>;
 
   /**
    * Set new `password` for user `username`.
    */
-  changePassword(username: string, password: string,
-                options?: PouchDB.Core.Options): Promise<PouchDB.Core.Response>;
+  changePassword(username: string, password: string, options?: PouchDB.Core.Options): Promise<PouchDB.Core.Response>;
 
   /**
    * Renames `oldUsername` to `newUsername`.
    */
-  changeUsername(oldUsername: string, newUsername: string,
-                options?: PouchDB.Core.Options): Promise<PouchDB.Core.Response>;
+  changeUsername(oldUsername: string, newUsername: string, options?: PouchDB.Core.Options): Promise<PouchDB.Core.Response>;
 
   /**
    * Sign up a new admin.
    */
-  signUpAdmin(username: string, password: string,
-              options?: PutUserOptions): Promise<string>;
+  signUpAdmin(username: string, password: string, options?: PutUserOptions): Promise<string>;
 
   /**
    * Delete an admin.
@@ -146,11 +140,39 @@ declare const window:any;
 
 const debuglog = function(...args) {
   // if(window && (window.PouchDB && window.PouchDB.debug && typeof window.PouchDB.debug.enabled === 'function' && window.PouchDB.debug.enabled('pouchdb:authentication'))) {
-  if(window && window.PouchDB && typeof window.PouchDB.emit === 'function' && window.pouchdbauthenticationdebug) {
+  // if(window && window.PouchDB && typeof window.PouchDB.emit === 'function' && window.pouchdbauthenticationdebug) {
+  //   window.PouchDB.emit('debug', ['authentication', ...args]);
+  //   console.log(...args);
+  // }
+  if(window && window.PouchDB && typeof window.PouchDB.emit === 'function') {
     window.PouchDB.emit('debug', ['authentication', ...args]);
-    console.log("PDBAUTH: ", ...args);
+  }
+  if(window && window.pouchdbauthenticationdebug) {
+    console.log(...args);
   }
 }
+
+const debugerr = function(...args) {
+  // if(window && (window.PouchDB && window.PouchDB.debug && typeof window.PouchDB.debug.enabled === 'function' && window.PouchDB.debug.enabled('pouchdb:authentication'))) {
+  // if(window && window.PouchDB && typeof window.PouchDB.emit === 'function' && window.pouchdbauthenticationdebug) {
+  //   window.PouchDB.emit('debug', ['authentication', ...args]);
+  //   console.error(...args);
+  // }
+  let err, strError;
+  if(window && (window.pouchdbauthenticationdebug || (window.PouchDB && typeof window.PouchDB.emit === 'function'))) {
+    err = {...args};
+    strError = JSON.stringify(err);
+  }
+  if(window && window.PouchDB && typeof window.PouchDB.emit === 'function') {
+    window.PouchDB.emit('debug', ['authentication', "ERROR", ...args]);
+    window.PouchDB.emit('debug', ['authentication', "STRERROR", strError]);
+  }
+  if(window && window.pouchdbauthenticationdebug) {
+    console.log("PDBAUTH ERROR:", strError);
+    console.error(...args);
+  }
+  }
+  // let err = [...args] || [{}];
 
 const getBaseUrl = function(db:PDB):string {
   // Use PouchDB.defaults' prefix, if any
@@ -281,8 +303,10 @@ async function doFetch(db:PDB, url:string, opts:any):Promise<any> {
     // console.log(`doFetch(): opts is: `, opts);
     if(full) {
       // let res:Response = await db.fetch(newurl, opts);
+      debuglog(`doFetch(): Fetching from url '${url}' with options:`, opts);
       res = await db.fetch(url, opts);
     } else {
+      debuglog(`doFetch(): Fetching from url '${newurl}' with options:`, opts);
       res = await fetch(newurl, opts);
     }
     debuglog(`doFetch(): Response is: `, res);
@@ -332,6 +356,8 @@ async function doFetch(db:PDB, url:string, opts:any):Promise<any> {
       err.message = (err.message + ' ' || '') +
           'Unknown error!  Did you remember to enable CORS?';
     }
+    debuglog(`doFetch(): Error during fetch!`);
+    debugerr(err);
     // callback(err);
     throw err;
   }
@@ -340,18 +366,35 @@ async function doFetch(db:PDB, url:string, opts:any):Promise<any> {
 class AuthError extends Error {
   public status:number = 400;
   public name:string = "authentication_error";
-  public message:string = "";
+  // public message:string = "";
   public error:string|boolean = true;
   public taken:boolean = false;
   public reason?:string = "";
+  public toJSON:Function;
+  public toJson:Function;
   // public error?:string = "";
-  public 
+  // public 
   constructor(msg?:string) {
     super(msg);
     if(msg) {
       this.message = msg;
     }
-    Error.captureStackTrace(this);
+    if(Error.captureStackTrace) {
+      Error.captureStackTrace(this, AuthError);
+    }
+    if(!this.reason) {
+      this.reason = this.message;
+    }
+    this.toJSON = () => {
+      // debuglog(`AuthError.toJSON() called`);
+      let out:any = Object.assign({}, this);
+      out.message = this.message + "";
+      // console.log(`AuthError.toJSON() called. Returning:`, out);
+      return out;
+    };
+    this.toJson = () => {
+      return this.toJSON();
+    };
     return this;
   }
 }

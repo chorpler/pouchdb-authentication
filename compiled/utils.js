@@ -12,6 +12,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -98,10 +109,33 @@ var debuglog = function () {
         args[_i] = arguments[_i];
     }
     // if(window && (window.PouchDB && window.PouchDB.debug && typeof window.PouchDB.debug.enabled === 'function' && window.PouchDB.debug.enabled('pouchdb:authentication'))) {
+    // if(window && window.PouchDB && typeof window.PouchDB.emit === 'function' && window.pouchdbauthenticationdebug) {
+    //   window.PouchDB.emit('debug', ['authentication', ...args]);
+    //   console.log(...args);
+    // }
     if (window && window.PouchDB && typeof window.PouchDB.emit === 'function' && window.pouchdbauthenticationdebug) {
         window.PouchDB.emit('debug', __spread(['authentication'], args));
-        console.log.apply(console, __spread(["PDBAUTH: "], args));
     }
+    console.log.apply(console, __spread(args));
+};
+var debugerr = function () {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+    }
+    // if(window && (window.PouchDB && window.PouchDB.debug && typeof window.PouchDB.debug.enabled === 'function' && window.PouchDB.debug.enabled('pouchdb:authentication'))) {
+    // if(window && window.PouchDB && typeof window.PouchDB.emit === 'function' && window.pouchdbauthenticationdebug) {
+    //   window.PouchDB.emit('debug', ['authentication', ...args]);
+    //   console.error(...args);
+    // }
+    if (window && window.PouchDB && typeof window.PouchDB.emit === 'function' && window.pouchdbauthenticationdebug) {
+        window.PouchDB.emit('debug', __spread(['authentication'], args));
+    }
+    // let err = [...args] || [{}];
+    var err = __assign({}, args);
+    var strError = JSON.stringify(err);
+    console.log("PDBAUTH ERROR:", strError);
+    console.error.apply(console, __spread(args));
 };
 var getBaseUrl = function (db) {
     // Use PouchDB.defaults' prefix, if any
@@ -232,17 +266,20 @@ function doFetch(db, url, opts) {
                         opts.body = JSON.stringify(opts.body);
                     }
                     if (!full) return [3 /*break*/, 2];
+                    // let res:Response = await db.fetch(newurl, opts);
+                    debuglog("PDBAUTH: doFetch(): Fetching from url '" + url + "' with options:", opts);
                     return [4 /*yield*/, db.fetch(url, opts)];
                 case 1:
-                    // let res:Response = await db.fetch(newurl, opts);
                     res = _b.sent();
                     return [3 /*break*/, 4];
-                case 2: return [4 /*yield*/, fetch(newurl, opts)];
+                case 2:
+                    debuglog("PDBAUTH: doFetch(): Fetching from url '" + newurl + "' with options:", opts);
+                    return [4 /*yield*/, fetch(newurl, opts)];
                 case 3:
                     res = _b.sent();
                     _b.label = 4;
                 case 4:
-                    debuglog("doFetch(): Response is: ", res);
+                    debuglog("PDBAUTH: doFetch(): Response is: ", res);
                     ok = res.ok;
                     return [4 /*yield*/, res.json()];
                 case 5:
@@ -263,10 +300,11 @@ function doFetch(db, url, opts) {
                         err = new AuthError(msg);
                         err.status = status_1;
                         if (content) {
-                            if (content.error) {
+                            if (typeof content.error === 'string') {
                                 err.name = content.error;
+                                err.error = content.error;
                             }
-                            if (content.reason) {
+                            if (typeof content.reason === 'string') {
                                 err.reason = content.reason;
                             }
                         }
@@ -284,6 +322,8 @@ function doFetch(db, url, opts) {
                         err_1.message = (err_1.message + ' ' || '') +
                             'Unknown error!  Did you remember to enable CORS?';
                     }
+                    debuglog("doFetch(): Error during fetch!");
+                    debugerr(err_1);
                     // callback(err);
                     throw err_1;
                 case 7: return [2 /*return*/];
@@ -294,20 +334,37 @@ function doFetch(db, url, opts) {
 exports.doFetch = doFetch;
 var AuthError = /** @class */ (function (_super) {
     __extends(AuthError, _super);
+    // public error?:string = "";
+    // public 
     function AuthError(msg) {
         var _this = _super.call(this, msg) || this;
         _this.status = 400;
         _this.name = "authentication_error";
-        _this.message = "";
-        _this.error = "authentication_error";
+        // public message:string = "";
+        _this.error = true;
         _this.taken = false;
         _this.reason = "";
         if (msg) {
             _this.message = msg;
         }
-        Error.captureStackTrace(_this);
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(_this, AuthError);
+        }
+        if (!_this.reason) {
+            _this.reason = _this.message;
+        }
         return _this;
     }
+    AuthError.prototype.toJSON = function () {
+        // debuglog(`AuthError.toJSON() called`);
+        var out = Object.assign({}, this);
+        out.message = this.message + "";
+        console.log("AuthError.toJSON() called. Returning:", out);
+        return out;
+    };
+    AuthError.prototype.toJson = function () {
+        return this.toJSON();
+    };
     return AuthError;
 }(Error));
 exports.AuthError = AuthError;
