@@ -8,11 +8,14 @@ import { SessionResponse        } from './utils'       ;
 import { doFetch                } from './utils'       ;
 import { getBasicAuthHeadersFor } from './utils'       ;
 import { getBasicAuthHeaders    } from './utils'       ;
+import { debuglog, debugerr     } from './utils'       ;
+import { debuglogemph           } from './utils'       ;
 import { assign, toPromise      } from 'pouchdb-utils' ;
 import { Headers                } from 'pouchdb-fetch' ;
 
 const logIn = async function(username:string, password:string, opts:LoginOptions):Promise<LoginResponse> {
   try {
+    debuglogemph(`PouchDB.logIn(): Called for '${username}'`);
     let db:PDB = this;
     let options:any = opts != undefined ? opts : {};
     if(['http', 'https'].indexOf(db.type()) === -1) {
@@ -62,6 +65,7 @@ const logIn = async function(username:string, password:string, opts:LoginOptions
 
 const logOut = async function(opts:LoginOptions):Promise<BasicResponse> {
   try {
+    debuglogemph(`PouchDB.logOut(): Called`);
     let db:PDB = this;
     let options:any = opts != undefined ? opts : {};
     let url:string = '/_session';
@@ -77,19 +81,22 @@ const logOut = async function(opts:LoginOptions):Promise<BasicResponse> {
     return res;
   } catch(err) {
     try {
-      // console.log(`logOut(): Caught error trying to log out, retrying:\n`, err);
+      debuglog(`======> PouchDB.logOut(): Caught error trying to log out`);
+      debugerr(err);
+      debuglog(`======> PouchDB.logOut(): Retrying without authentication …`);
       let db:PDB = this;
       let options:any = opts != undefined ? opts : {};
       let url:string = '/_session';
-      let ajaxOpts:any = assign({
+      let noAuthAjaxOpts:any = assign({
         method: 'DELETE',
         // headers: getBasicAuthHeaders(db),
       }, options.ajax || {});
-    
-      let res:BasicResponse = await doFetch(db, url, ajaxOpts);
+      delete noAuthAjaxOpts.headers;
+      let res:BasicResponse = await doFetch(db, url, noAuthAjaxOpts);
       if(db && db.__opts && db.__opts.auth) {
         delete db.__opts.auth;
       }
+      debuglog(`======> PouchDB.logOut(): Successfully logged out after retrying without authentication headers.`);
       return res;
     } catch(err) {
       throw err;
@@ -99,6 +106,7 @@ const logOut = async function(opts:LoginOptions):Promise<BasicResponse> {
 
 const getSession = async function ():Promise<SessionResponse> {
   try {
+    debuglogemph(`PouchDB.getSession(): Called`);
     let db:PDB = this;
     let url:string = '/_session';
     let ajaxOpts:any = {

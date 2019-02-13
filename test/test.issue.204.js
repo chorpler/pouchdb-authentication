@@ -15,6 +15,7 @@ describe('issue-204', function () {
   var db;
 
   beforeEach(function () {
+    utils.showTestStart(this);
     db = new PouchDB(dbName);
     return utils.ensureUsersDatabaseExists(db).then(function () {
       return db.signUpAdmin('anna', 'secret');
@@ -24,6 +25,7 @@ describe('issue-204', function () {
   });
 
   afterEach(function () {
+    let context = this;
     return db.logIn('anna', 'secret').then(function () {
       return db.deleteUser('spiderman');
     }).then(function () {
@@ -32,10 +34,15 @@ describe('issue-204', function () {
       return db.logOut();
     }).then(function () {
       return db.destroy();
+    }).then(function () {
+      utils.showTestResult(context);
+    }).catch(function () {
+      utils.showTestResult(context);
     });
   });
 
   function testGetUser(db) {
+    // console.log(`ISSUE-204.testGetUser(): DB is: `, db);
     return db.getUser('spiderman').then(function (res) {
       res.name.should.equal('spiderman');
     });

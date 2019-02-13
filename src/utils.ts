@@ -1,12 +1,29 @@
 import   * as PouchDB      from "pouchdb-core"          ;
-// import PouchDB from 'pouchdb-core';
 import { btoa             } from "pouchdb-binary-utils" ;
-import { Headers,         } from "pouchdb-fetch"        ;
-// import { fetch,           } from "pouchdb-core"         ;
+import { Headers          } from "pouchdb-fetch"        ;
+import { fetch as pFetch  } from "pouchdb-fetch"        ;
 import { fetch as wFetch, } from "whatwg-fetch"         ;
 import { assign, parseUri } from "pouchdb-utils"        ;
 
 const StaticPouch:any = PouchDB;
+
+interface ParsedURI {
+  anchor     : string;
+  authority  : string;
+  directory  : string;
+  file       : string;
+  host       : string;
+  password  ?: string;
+  path       : string;
+  port       : string;
+  protocol   : string;
+  query     ?: string;
+  queryKey  ?: any   ;
+  relative   : string;
+  source     : string;
+  user      ?: string;
+  userInfo  ?: string;
+}
 
 interface AuthHeader {
   username?:string;
@@ -140,36 +157,100 @@ declare const window:any;
 
 const debuglog = function(...args) {
   // if(window && (window.PouchDB && window.PouchDB.debug && typeof window.PouchDB.debug.enabled === 'function' && window.PouchDB.debug.enabled('pouchdb:authentication'))) {
-  // if(window && window.PouchDB && typeof window.PouchDB.emit === 'function' && window.pouchdbauthenticationdebug) {
+  // if(window && window.PouchDB && typeof window.PouchDB.emit === 'function' && window.pouchdbauthenticationplugindebug) {
   //   window.PouchDB.emit('debug', ['authentication', ...args]);
   //   console.log(...args);
   // }
   if(window && window.PouchDB && typeof window.PouchDB.emit === 'function') {
     window.PouchDB.emit('debug', ['authentication', ...args]);
   }
-  if(window && window.pouchdbauthenticationdebug === true) {
+  if(window && window.pouchdbauthenticationplugindebug === true) {
     console.log(...args);
+  }
+}
+
+const debugloggroup = function(label) {
+  if(window && window.pouchdbauthenticationplugindebug === true) {
+    console.groupCollapsed(label);
+  }
+}
+
+const debugloggroupend = function() {
+  if(window && window.pouchdbauthenticationplugindebug === true) {
+    console.groupEnd();
+  }
+}
+
+const debuglogemph = function(msg) {
+  // if(window && (window.PouchDB && window.PouchDB.debug && typeof window.PouchDB.debug.enabled === 'function' && window.PouchDB.debug.enabled('pouchdb:authentication'))) {
+  // if(window && window.PouchDB && typeof window.PouchDB.emit === 'function' && window.pouchdbauthenticationplugindebug) {
+  //   window.PouchDB.emit('debug', ['authentication', ...args]);
+  //   console.log(...args);
+  // }
+  const es:string = "background-color:red; color:white;";
+  if(window && window.PouchDB && typeof window.PouchDB.emit === 'function') {
+    window.PouchDB.emit('debug', ['authentication', msg]);
+  }
+  if(window && window.pouchdbauthenticationplugindebug === true) {
+    if(window.chrome) {
+      console.log("%c" + msg, es);
+    } else {
+      console.log(msg);
+    }
   }
 }
 
 const debugerr = function(...args) {
   // if(window && (window.PouchDB && window.PouchDB.debug && typeof window.PouchDB.debug.enabled === 'function' && window.PouchDB.debug.enabled('pouchdb:authentication'))) {
-  // if(window && window.PouchDB && typeof window.PouchDB.emit === 'function' && window.pouchdbauthenticationdebug) {
+  // if(window && window.PouchDB && typeof window.PouchDB.emit === 'function' && window.pouchdbauthenticationplugindebug) {
   //   window.PouchDB.emit('debug', ['authentication', ...args]);
   //   console.error(...args);
   // }
-  let err, strError;
-  if(window && (window.pouchdbauthenticationdebug || (window.PouchDB && typeof window.PouchDB.emit === 'function'))) {
-    err = {...args};
-    strError = JSON.stringify(err);
+  let errs, strError, jsonError = {};
+  if(window && (window.pouchdbauthenticationplugindebug || (window.PouchDB && typeof window.PouchDB.emit === 'function'))) {
+    errs = [...args];
+    for(let err of errs) {
+      if(err instanceof AuthError) {
+        jsonError = err.toJSON();
+        strError = JSON.stringify(jsonError);
+        break;
+      } else if(err instanceof Error) {
+        strError = JSON.stringify(err);
+        jsonError = JSON.parse(strError);
+        if(strError === '{}') {
+          jsonError = {
+            message: err.message || "unknown_error_message",
+            name: err.name || "unknown_error_name",
+            stack: err.stack || "unknown_error_stack",
+          };
+          strError = JSON.stringify(jsonError);
+        }
+        // else {
+
+        // }
+        break;
+      }
+    }
   }
   if(window && window.PouchDB && typeof window.PouchDB.emit === 'function') {
     window.PouchDB.emit('debug', ['authentication', "ERROR", ...args]);
     window.PouchDB.emit('debug', ['authentication', "STRERROR", strError]);
   }
-  if(window && window.pouchdbauthenticationdebug === true) {
-    console.log("PDBAUTH ERROR:", strError);
-    console.error(...args);
+  if(window && window.pouchdbauthenticationplugindebug === true) {
+    const errcss:string = "font-weight: bold; background-color: rgba(255, 0, 0, 0.25);";
+    if(errs[0]) {
+      if(errs[0] instanceof AuthError) {
+        console.log("%cPDBAUTH AUTHERROR:", errcss, jsonError);
+        console.error(errs[0]);
+      } else if(errs[0] instanceof Error) {
+        console.log("%cPDBAUTH ERROR: ", errcss, jsonError);
+        console.error(errs[0]);
+      } else {
+        console.error("%cPDBAUTH ERROR 1?: ", errcss, strError);
+      }
+    } else {
+      console.error("%cPDBAUTH ERROR 2?: ", errcss, strError);
+    }
   }
 }
   // let err = [...args] || [{}];
@@ -181,12 +262,12 @@ const getBaseUrl = function(db:PDB):string {
   // let type:string = db.type();
   let prefix:string = db && db.__opts && typeof db.__opts.prefix === 'string' ? db.__opts.prefix : '';
   if(prefix) {
-    fullName = prefix + (prefix.endsWith('/') ? '' : '/') + db.name;
+    fullName = prefix + (prefix.endsWith('/') ? '' : '/') + dbname;
   } else {
-    fullName = db.name;
+    fullName = dbname;
   }
 
-  let uri:any = parseUri(fullName);
+  let uri:ParsedURI = parseUri(fullName);
 
   // Compute parent path for databases not hosted on domain root (see #215)
   let path:string = uri.path;
@@ -199,6 +280,69 @@ const getBaseUrl = function(db:PDB):string {
   // console.log(`getBaseUrl(): Base URL is '${baseURL}'`);
   debuglog(`getBaseUrl(): Base URL is '${baseURL}'`);
   return baseURL;
+}
+
+const getDatabaseUrl = function(db:PDB):string {
+  let fullName:string;
+  let dbname:string = db.name;
+  // let type:string = db.type();
+  let prefix:string = db && db.__opts && typeof db.__opts.prefix === 'string' ? db.__opts.prefix : '';
+  if(prefix) {
+    fullName = prefix + (prefix.endsWith('/') ? '' : '/') + dbname;
+  } else {
+    fullName = dbname;
+  }
+  debuglog(`getDatabaseUrl(): Database URL is '${fullName}'`);
+  return fullName;
+}
+
+const getRelativeComplexUrl = function(db:PDB, url:string):string {
+  let dbBaseURL:string = getDatabaseUrl(db);
+  let complexBaseUrl:string = makeBaseUrl(dbBaseURL, url);
+  let dbname:string = db && db.name ? db.name : "UNKNOWN_POUCHDB_NAME";
+  debuglog(`getRelativeComplexUrl(): Relative complex URL for database '${dbname}' and URL '${url}' is '${complexBaseUrl}'`);
+  return complexBaseUrl;
+}
+
+const getComplexBaseUrl = function(db:PDB, url:string):string {
+  let dbBaseURL:string = getDatabaseUrl(db);
+  let complexBaseUrl:string = makeBaseUrl(dbBaseURL, url);
+  let dbname:string = db && db.name ? db.name : "UNKNOWN_POUCHDB_NAME";
+  debuglog(`getComplexBaseUrl(): Complex base URL for database '${dbname}' and URL '${url}' is '${complexBaseUrl}'`);
+  return complexBaseUrl;
+}
+
+const makeBaseUrl = function(baseURL:string, newURL:string):string {
+  // let newuri : ParsedURI = parseUri(newURL);
+  // let puri   : ParsedURI = parseUri(baseURL);
+  let outurl:string = "";
+  baseURL = baseURL.slice(-1) === '/' ? baseURL.slice(0,-1) : baseURL;
+  let baseuri:URL = new URL(baseURL);
+  let puri:URL = new URL(newURL, baseURL);
+  let relativePath:string = puri.pathname + puri.search;
+  // let outurl:string = getURLWithoutSearchParams(baseURL);
+  // outurl = outurl.slice(-1) === '/' ? outurl.slice(0,-1) : outurl;
+  // let dir1:string = puri.directory + puri.file;
+  let dir1:string = baseuri.pathname;
+  let dirs:string[] = dir1.split('/');
+  let len   : number = dirs.length;
+  let last  : number = len - 1;
+  let count : number = dirs[last] === "" ? len - 2 : len - 1;
+  for (let i = 0; i < count; i++) {
+    outurl += "../";
+  }
+  let addedpath:string = relativePath.slice(0,1) === '/' ? relativePath.slice(1) : relativePath;
+  let newfile:string = addedpath;
+  outurl += newfile;
+  outurl = outurl.slice(0,1) === '/' ? outurl.slice(1) : outurl;
+  debuglog(`makeBaseUrl(): Complicated base URL from '${baseURL}' and '${newURL}' is '${outurl}'`);
+  return outurl;
+}
+
+const getURLWithoutSearchParams = function(url:string):string {
+  let uri:ParsedURI = parseUri(url);
+  let cleanURL:string = uri.protocol + "://" + uri.authority + uri.directory + uri.file;
+  return cleanURL;
 }
 
 function getBasicAuthHeadersFor(username:string, password:string):Headers {
@@ -243,6 +387,14 @@ function getBasicAuthHeaders(db?:PDB):Headers {
 async function doFetch(db:PDB, url:string, opts:any):Promise<any> {
   try {
     opts = assign(opts || {});
+    // let dbname = db && typeof db.fetch === 'function' 
+    let dbname:string = getDatabaseUrl(db);
+    let groupLabel:string = `doFetch called for DB '${dbname}' and URL '${url}' …`;
+    debugloggroup(groupLabel);
+    debuglog(`doFetch(): Full DB is:`, db);
+    // debuglog(`doFetch(): Called with url '${url}'`);
+    debuglog(`doFetch(): Called with opts:`, opts);
+    debugloggroupend();
     let full:boolean = true;
     let newurl:string;
     let baseURL:string;
@@ -272,25 +424,30 @@ async function doFetch(db:PDB, url:string, opts:any):Promise<any> {
     // }
     for(let key of RESERVED_KEYS) {
       if(url.includes(key)) {
+      // if(url.startsWith(key)) {
         full = false;
       }
     }
     if(full) {
       baseURL = db.name;
     } else {
-      baseURL = getBaseUrl(db);
+      // baseURL = getBaseUrl(db);
+      baseURL = getComplexBaseUrl(db, url);
     }
+    newurl = baseURL;
 
-    if(url[0] === "/") {
-      newurl = baseURL + url;
-    } else {
-      newurl = baseURL + "/" + url;
-    }
+    // if(url[0] === "/") {
+    //   newurl = baseURL + url;
+    // } else {
+    //   newurl = baseURL + "/" + url;
+    // }
+
+
     // if(url[0] === '/') {
     //   newurl = ".." + url;
     // }
 
-    let dbname:string = db.name;
+    // let dbname:string = db.name;
     // newurl = url;
     // console.log(`doFetch(): DB is: `, db);
     
@@ -303,11 +460,14 @@ async function doFetch(db:PDB, url:string, opts:any):Promise<any> {
     // console.log(`doFetch(): opts is: `, opts);
     if(full) {
       // let res:Response = await db.fetch(newurl, opts);
-      debuglog(`doFetch(): Fetching from url '${url}' with options:`, opts);
+      debuglog(`doFetch(): Fetching from url '${url}' via PouchDB.fetch() with options:`, opts);
       res = await db.fetch(url, opts);
     } else {
       debuglog(`doFetch(): Fetching from url '${newurl}' with options:`, opts);
-      res = await fetch(newurl, opts);
+      // res = await fetch(newurl, opts);
+      // res = await wFetch(newurl, opts);
+      // res = await pFetch(newurl, opts);
+      res = await db.fetch(newurl, opts);
     }
     debuglog(`doFetch(): Response is: `, res);
     // let res:Response = await db.fetch(newurl, opts);
@@ -374,13 +534,18 @@ class AuthError extends Error {
   public toJson:Function;
   // public error?:string = "";
   // public 
-  constructor(msg?:string) {
+  constructor(msg:string, ...params) {
     super(msg);
+    let self = this;
+
     if(msg) {
       this.message = msg;
     }
-    if(Error.captureStackTrace) {
-      Error.captureStackTrace(this, AuthError);
+    if(typeof Error !== 'undefined' && typeof Error.captureStackTrace === 'function') {
+      // Error.captureStackTrace(this, AuthError);
+      // Error.captureStackTrace(this);
+      Error.captureStackTrace(self, AuthError);
+      // Error.captureStackTrace(self, self.constructor);
     }
     if(!this.reason) {
       this.reason = this.message;
@@ -413,6 +578,11 @@ class AuthError extends Error {
 type LoginOptions = PouchDB.Core.Options;
 type BasicResponse = PouchDB.Core.BasicResponse;
 export {
+  debuglog,
+  debuglogemph,
+  debugloggroup,
+  debugloggroupend,
+  debugerr,
   AuthError,
   doFetch,
   getBasicAuthHeadersFor,
@@ -431,4 +601,8 @@ export {
   PutUserOptions,
   CouchNodeMembership,
   parseUri,
+  getComplexBaseUrl,
+  getRelativeComplexUrl,
+  makeBaseUrl,
+  getURLWithoutSearchParams,
 };

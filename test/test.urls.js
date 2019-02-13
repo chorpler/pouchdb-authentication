@@ -12,6 +12,15 @@ describe('urls', function () {
   var dbName = 'testdb';
   var dbUrl = hostUrl + '/' + dbName;
 
+  beforeEach(function () {
+    utils.showTestStart(this);
+  });
+
+  afterEach(function () {
+    let context = this;
+    utils.showTestResult(context);
+  });
+
   it('Correct users database url for database without trailing slash', function () {
     var db = new PouchDB(dbUrl);
     var usersUrl = db.getUsersDatabaseUrl();

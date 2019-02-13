@@ -8,6 +8,9 @@ import { CouchNodeMembership    } from './utils'       ;
 import { doFetch                } from './utils'       ;
 import { getBasicAuthHeaders    } from './utils'       ;
 import { getBasicAuthHeadersFor } from './utils'       ;
+import { debuglog, debugerr     } from './utils'       ;
+import { debuglogemph           } from './utils'       ;
+import { Headers                } from 'pouchdb-fetch' ;
 // import { getBaseUrl             } from './utils'       ;
 import { assign                 } from 'pouchdb-utils' ;
 // import { toPromise              } from 'pouchdb-utils' ;
@@ -38,6 +41,7 @@ const getMembership = async function(opts:LoginOptions):Promise<CouchNodeMembers
 
 const signUpAdmin = async function(username:string, password:string, opts:LoginOptions):Promise<BasicResponse> {
   try {
+    debuglogemph(`PouchDB.signUpAdmin(): Called for '${username}'`);
     let db:PDB = this;
     let options:any = opts != undefined ? opts : {};
     if(['http', 'https'].indexOf(db.type()) === -1) {
@@ -84,6 +88,7 @@ const signUpAdmin = async function(username:string, password:string, opts:LoginO
 
 const deleteAdmin = async function(username:string, opts:LoginOptions):Promise<BasicResponse> {
   try {
+    debuglogemph(`PouchDB.deleteAdmin(): Called for '${username}'`);
     let db:PDB = this;
     let options:any = opts != undefined ? opts : {};
     if(['http', 'https'].indexOf(db.type()) === -1) {
@@ -94,7 +99,7 @@ const deleteAdmin = async function(username:string, opts:LoginOptions):Promise<B
       throw err;
     }
   
-    let membership:CouchNodeMembership
+    let membership:CouchNodeMembership;
     let nodeName:string;
     try {
       membership = await db.getMembership(opts);
@@ -110,17 +115,25 @@ const deleteAdmin = async function(username:string, opts:LoginOptions):Promise<B
     }
     let configUrl:string = getConfigUrl(db, nodeName);
     let url:string = (options.configUrl || configUrl) + '/admins/' + encodeURIComponent(username);
+    let headers:Headers = getBasicAuthHeaders(db);
     let ajaxOpts:any = assign({
       method: 'DELETE',
       processData: false,
-      headers: getBasicAuthHeaders(db),
+      headers: headers,
     }, options.ajax || {});
-
-    let res:BasicResponse = await doFetch(db, url, ajaxOpts);
+    let noAuthAjaxOpts:any = assign({}, ajaxOpts);
+    delete noAuthAjaxOpts.headers;
+    let res:BasicResponse;
+    try {
+      res = await doFetch(db, url, ajaxOpts);
+      return res;
+    } catch(fetchErr) {
+      debuglogemph(`deleteAdmin(): Error deleting administ`)
+    }
     return res;
   } catch(err) {
     throw err;
   }
 };
 
-export { getMembership, deleteAdmin, signUpAdmin };
+export { getConfigUrl, getMembership, deleteAdmin, signUpAdmin };

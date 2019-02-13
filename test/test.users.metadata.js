@@ -16,16 +16,22 @@ describe('users.metadata', function () {
   var db;
 
   beforeEach(function () {
+    utils.showTestStart(this);
     db = new PouchDB(dbName);
     return utils.ensureUsersDatabaseExists(db);
   });
 
   afterEach(function () {
+    let context = this;
     return db.logout().then(function () {
-      return db.destroy().then(function () {
-        // remove the fake users, hopefully we're in the admin party
-        return utils.deleteUsers(db, users);
-      });
+      return db.destroy();
+    }).then(function () {
+      // remove the fake users, hopefully we're in the admin party
+      return utils.deleteUsers(db, users);
+    }).then(function () {
+      utils.showTestResult(context);
+    }).catch(function () {
+      utils.showTestResult(context);
     });
   });
 

@@ -7,6 +7,8 @@ import { LoginOptions        } from './utils'       ;
 import { doFetch             } from './utils'       ;
 import { getBasicAuthHeaders } from './utils'       ;
 import { getBaseUrl          } from './utils'       ;
+import { debuglog, debugerr  } from './utils'       ;
+import { debuglogemph        } from './utils'       ;
 import { assign              } from 'pouchdb-utils' ;
 import { clone               } from 'pouchdb-utils' ;
 import { toPromise           } from 'pouchdb-utils' ;
@@ -23,6 +25,8 @@ const getUsersDatabaseUrl = function():string {
 
 const updateUser = async function(db:PDB, user:PouchDBUserDoc, opts:PutUserOptions):Promise<BasicResponse> {
   try {
+    let id:string = user && typeof user._id === 'string' ? user._id : "UNKNOWN_USER";
+    debuglogemph(`PouchDB.updateUser(): Called for '${id}'`);
     let options:any = opts != undefined ? opts : {};
     let reservedWords:string[] = [
       '_id',
@@ -67,6 +71,7 @@ const updateUser = async function(db:PDB, user:PouchDBUserDoc, opts:PutUserOptio
 
 const signUp = async function (username:string, password:string, opts:PutUserOptions):Promise<BasicResponse> {
   try {
+    debuglogemph(`PouchDB.signUp(): Called for '${username}'`);
     let db:PDB = this;
     let options:any = opts != undefined ? opts : {};
     if(['http', 'https'].indexOf(db.type()) === -1) {
@@ -98,6 +103,7 @@ const signUp = async function (username:string, password:string, opts:PutUserOpt
 
 const getUser = async function(username:string, opts:LoginOptions):Promise<PouchDBUserDoc> {
   try {
+    debuglogemph(`PouchDB.getUser(): Called for '${username}'`);
     let db:PDB = this;
     let options:any = opts != undefined ? opts : {};
     if(!username) {
@@ -120,6 +126,7 @@ const getUser = async function(username:string, opts:LoginOptions):Promise<Pouch
 
 const putUser = async function (username:string, opts:PutUserOptions):Promise<BasicResponse> {
   try {
+    debuglogemph(`PouchDB.putUser(): Called for '${username}'`);
     let db:PDB = this;
     let options:any = opts != undefined ? opts : {};
     if(['http', 'https'].indexOf(db.type()) === -1) {
@@ -140,6 +147,7 @@ const putUser = async function (username:string, opts:PutUserOptions):Promise<Ba
 
 const deleteUser = async function(username:string, opts:LoginOptions):Promise<BasicResponse> {
   try {
+    debuglogemph(`PouchDB.deleteUser(): Called for '${username}'`);
     let db:PDB = this;
     let options:any = opts != undefined ? opts : {};
     if (['http', 'https'].indexOf(db.type()) === -1) {
@@ -165,6 +173,7 @@ const deleteUser = async function(username:string, opts:LoginOptions):Promise<Ba
 
 const changePassword = async function(username:string, password:string, opts:LoginOptions):Promise<BasicResponse> {
   try {
+    debuglogemph(`PouchDB.changePassword(): Called for '${username}'`);
     let db:PDB = this;
     let options:any = opts != undefined ? opts : {};
     if(['http', 'https'].indexOf(db.type()) === -1) {
@@ -195,7 +204,7 @@ const changePassword = async function(username:string, password:string, opts:Log
 
 const changeUsername = async function(oldUsername:string, newUsername:string, opts:PutUserOptions):Promise<BasicResponse> {
   try {
-    
+    debuglogemph(`PouchDB.changeUsername(): Called for '${oldUsername}' => '${newUsername}'`);
     let db:PDB = this;
     let options:any = opts != undefined ? opts : {};
     let USERNAME_PREFIX:string = 'org.couchdb.user:';

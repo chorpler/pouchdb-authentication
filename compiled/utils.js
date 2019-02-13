@@ -97,9 +97,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var PouchDB = __importStar(require("pouchdb-core"));
-// import PouchDB from 'pouchdb-core';
 var pouchdb_binary_utils_1 = require("pouchdb-binary-utils");
 var pouchdb_fetch_1 = require("pouchdb-fetch");
+var whatwg_fetch_1 = require("whatwg-fetch");
 var pouchdb_utils_1 = require("pouchdb-utils");
 exports.parseUri = pouchdb_utils_1.parseUri;
 var StaticPouch = PouchDB;
@@ -208,7 +208,7 @@ function getBasicAuthHeaders(db) {
 exports.getBasicAuthHeaders = getBasicAuthHeaders;
 function doFetch(db, url, opts) {
     return __awaiter(this, void 0, void 0, function () {
-        var e_1, _a, full, newurl, baseURL, res, RESERVED_KEYS, RESERVED_KEYS_1, RESERVED_KEYS_1_1, key, dbname, ok, content, msg, status_1, err, err_1;
+        var e_1, _a, full, newurl, baseURL, res, RESERVED_KEYS, RESERVED_KEYS_1, RESERVED_KEYS_1_1, key, ok, content, msg, status_1, err, err_1;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -267,7 +267,10 @@ function doFetch(db, url, opts) {
                     else {
                         newurl = baseURL + "/" + url;
                     }
-                    dbname = db.name;
+                    // if(url[0] === '/') {
+                    //   newurl = ".." + url;
+                    // }
+                    // let dbname:string = db.name;
                     // newurl = url;
                     // console.log(`doFetch(): DB is: `, db);
                     if (opts.body && typeof opts.body !== 'string') {
@@ -282,7 +285,7 @@ function doFetch(db, url, opts) {
                     return [3 /*break*/, 4];
                 case 2:
                     debuglog("doFetch(): Fetching from url '" + newurl + "' with options:", opts);
-                    return [4 /*yield*/, fetch(newurl, opts)];
+                    return [4 /*yield*/, whatwg_fetch_1.fetch(newurl, opts)];
                 case 3:
                     res = _b.sent();
                     _b.label = 4;
