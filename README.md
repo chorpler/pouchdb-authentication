@@ -9,6 +9,30 @@ PouchDB Authentication
 
 Easy user authentication for PouchDB/CouchDB.
 
+# Note
+The following changes have been been made in this fork:
+- Updated to use PouchDB 7.x dependencies, and to work as a plugin with PouchDB 7.x
+- Rewritten in TypeScript
+- Support for callbacks removed. I'm not using callbacks, I hate callbacks, nobody should be using callbacks. Promises are where its at.
+- Testing now uses Headless Chromium (via `puppeteer`) instead of PhantomJS, since [PhantomJS was basically deprecated in favor of Headless Chromium](https://groups.google.com/forum/#!topic/phantomjs/9aI5d-LDuNE). This means we can now use ES6 features like `let` and `const` and arrow functions in the tests.
+
+## URGENT NOTICE (13 Feb 2019)
+- ### `pouchdb-fetch` issue
+  
+  Currently, you must manually update the dependency `pouchdb-fetch` to use at least `fetch-cookie@0.7.2` for this plugin to work in a Node.js-only environment.
+  ```
+  cd (your project directory)/node_modules/pouchdb-fetch
+  npm i --save fetch-cookie@0.7.2
+  cd ../..
+  ```
+  **IF YOU DO NOT DO THIS**, `pouchdb-fetch` will use its outdated `fetch-cookie@0.7.0` version, which has a problem parsing AuthSession cookies from CouchDB, and you will not be able to use the `.logIn()` method.
+
+  I decided it was easier to put these instructions in than to bundle `node-fetch` and `fetch-cookie` in this plugin, since that roughly quadruples the size of the plugin, and adding `whatwg-url` has already made it pretty big. (I'm actually thinking of removing that as well, and just requiring Node uses to be using 10.x or later, which already include native support for the URL class. We'll see.)
+
+------
+------
+
+# Original ReadMe
 ```js
 var db = new PouchDB('http://mysite:5984/mydb', {skip_setup: true});
 db.logIn('batman', 'brucewayne').then(function (batman) {

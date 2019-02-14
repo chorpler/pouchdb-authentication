@@ -1,8 +1,12 @@
 var childProcess = require('child_process');
 var karma = require('karma');
 var Mocha = require('mocha');
+var Puppeteer = require('puppeteer');
 var fs = require('fs');
 var path = require('path');
+
+var CHROME_BIN = Puppeteer.executablePath();
+process.env.CHROME_BIN = CHROME_BIN;
 
 function npmRun(bin, args, stdio) {
   return run('node_modules/.bin/' + bin, args, stdio);

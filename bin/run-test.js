@@ -5,7 +5,8 @@ var utils = require('./utils');
 var runServer = require('./run-server');
 
 var server = process.env.SERVER;
-var client = process.env.CLIENT || 'phantom';
+// var client = process.env.CLIENT || 'phantom';
+var client = process.env.CLIENT || 'ChromeHeadless';
 
 runServer(server, function (serverHost) {
   return runTests(client, serverHost).catch(function (error) {
@@ -64,7 +65,10 @@ function buildKarmaConf(client, serverHost) {
     },
   };
 
-  if (client === 'phantom') {
+  if (client === 'ChromeHeadless') {
+    options.browsers = ['ChromeHeadless'];
+    
+  } else if (client === 'phantom') {
     options.browsers = ['PhantomJS'];
     options.phantomJsLauncher = {
       exitOnResourceError: true,

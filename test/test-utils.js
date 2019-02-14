@@ -2,40 +2,46 @@ var PouchDB = require('pouchdb-core');
 var PouchHttp = require('pouchdb-adapter-http');
 var Authentication = require('../lib');
 var PouchDBDebug = require('pouchdb-debug');
-// var PouchFetch = require('pouchdb-fetch');
+var PouchFetch = require('pouchdb-fetch');
 
 PouchDB.plugin(PouchHttp);
 PouchDB.plugin(Authentication.default);
 PouchDB.plugin(PouchDBDebug);
 
-var {fetch} = require('pouchdb-fetch');
+// var {fetch} = require('pouchdb-fetch');
 // var fetch = require('pouchdb-fetch').fetch;
-// var fetch = PouchFetch.fetch;
+var fetch = PouchFetch.fetch;
+
+// const ShowDebugOutput = true;
+const ShowDebugOutput = false;
+
 var testNumber = 1;
-var esstart   = "margin-top: 50px; margin-bottom: 5px; background-color: blue; color: white;";
-var esfinish  = "margin-top: 5px; margin-bottom: 50px; background-color: blue; color: white;";
-var espassed  = "margin-top: 5px; margin-bottom: 50px; border: 1px solid green; color: green; font-weight: bold;";
-var esfailed  = "margin-top: 5px; margin-bottom: 50px; border: 1px solid red; background-color: rgba(32, 0, 128, 0); color: red; font-weight: bold;";
-var esunknown = "margin-top: 5px; margin-bottom: 50px; border: 1px solid blue; background-color: rgba(32, 0, 128, 0); color: blue; font-weight: bold;";
+var esstart   = "padding-top: 50px; padding-bottom:  5px; background-color: blue; color: white;";
+var esfinish  = "padding-top:  5px; padding-bottom: 50px; background-color: blue; color: white;";
+var espassed  = "padding-top: 50px; padding-bottom: 50px; background-color: rgba(0, 255, 0, 0.3); border: 2px solid green; font-weight: bold; font-size: 16px;";
+var esfailed  = "padding-top: 50px; padding-bottom: 50px; background-color: rgba(255, 0, 0, 0.5); border: 2px solid   red; font-weight: bold; font-size: 16px;";
+var esunknown = "padding-top: 50px; padding-bottom: 50px; background-color: rgba(0, 0, 255, 0.2); border: 2px solid  blue; font-weight: bold; font-size: 16px;";
 
 const debuglog = Authentication.debuglog;
 const debugloggroup = Authentication.debugloggroup;
 const debugloggroupend = Authentication.deubgloggroupend;
 
+var g = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : null;
+
 function showTestStart(context) {
   let ctx = context;
   let testName = "UNKNOWN_TEST";
-  // console.log(`SHOWTESTSTART: Context is:`, ctx);
+  // console.log("SHOWTESTSTART: Context is:", ctx);
   if (ctx && ctx.currentTest && ctx.currentTest.title) {
     testName = ctx.currentTest.title;
   }
   debuglog(`%c<===== START TEST ${testNumber} ('${testName}') =====>`, esstart);
-  // console.log(`%c<===== START TEST ${testNumber} ('${testName}') =====>`, esstart);
+  // console.log("%c<===== START TEST ${testNumber} ('${testName}') =====>", esstart);
 }
 
 function showTestResult(context) {
   let ctx = context;
-  // console.log(`SHOWTESTRESULT: Context is:`, ctx);
+  // console.log("SHOWTESTRESULT: Context is:", ctx);
   let testName = "UNKNOWN_TEST", state = "UNKNOWN";
   if (ctx && ctx.currentTest && ctx.currentTest.title) {
     testName = ctx.currentTest.title;
@@ -43,12 +49,14 @@ function showTestResult(context) {
   }
   if (state === 'passed') {
     debuglog(`%c<===== RESULT: PASSED TEST ${testNumber++} ('${testName}') =====>`, espassed);
-    // console.log(`%c<===== RESULT: PASSED TEST ${testNumber++} ('${testName}') =====>`, espassed);
+    // console.log("%c<===== RESULT: PASSED TEST ${testNumber++} ('${testName}') =====>", espassed);
   } else if (state === 'failed') {
     debuglog(`%c<===== RESULT: FAILED TEST ${testNumber++} ('${testName}') =====>`, esfailed);
-    // console.log(`%c<===== RESULT: FAILED TEST ${testNumber++} ('${testName}') =====>`, esfailed);
+    // console.log("%c<===== RESULT: FAILED TEST ${testNumber++} ('${testName}') =====>`, esfailed);
   } else {
     debuglog(`%c<===== RESULT: ?????? TEST ${testNumber++} ('${testName}') =====>`, esunknown);
+    // var ukString = sprintf(`%c<===== RESULT: ?????? TEST %d ('%s') =====>`, testNumber++, testName);
+    // debuglog(ukString, esunknown);
     // console.log(`%c<===== RESULT: ?????? TEST ${testNumber++} ('${testName}') =====>`, esunknown);
   }
 }
@@ -74,13 +82,14 @@ module.exports.TestPouch = PouchDB.defaults({
 });
 
 module.exports.getConfig = function () {
-  if (typeof window !== 'undefined') {
-    window['pouchdbauthenticationplugin'] = Authentication;
-    // window['pouchdbauthenticationplugindebug'] = true;
-    window['pouchdbauthenticationplugindebug'] = false;
-    window['AuthError'] = Authentication.AuthError;
-    window['PouchDB'] = PouchDB;
-    window['toggledebug'] = function () { window['pouchdbauthenticationplugindebug'] = !window['pouchdbauthenticationplugindebug']; return window['pouchdbauthenticationplugindebug']; };
+  // if (typeof window !== 'undefined' && typeof window === 'object') {
+  if (g) {
+    g['pouchdbauthenticationplugin'] = Authentication;
+    g['pouchdbauthenticationplugindebug'] = true;
+    g['pouchdbauthenticationplugindebug'] = ShowDebugOutput;
+    g['AuthError'] = Authentication.AuthError;
+    g['PouchDB'] = PouchDB;
+    g['toggledebug'] = function () { g['pouchdbauthenticationplugindebug'] = !g['pouchdbauthenticationplugindebug']; return g['pouchdbauthenticationplugindebug']; };
 
     // Object.defineProperty(window, 'debugtoggle', {
     //   get: function () {

@@ -9,7 +9,7 @@ var PouchDB = utils.TestPouch;
 var serverHost = utils.getConfig().serverHost;
 
 describe('admins', function () {
-
+  // this.timeout(20000);
   var dbHost = serverHost;
   var dbName = dbHost + '/testdb';
 
@@ -50,8 +50,9 @@ var testNumber = utils.testNumber, testName = utils.testName;
       return db.destroy();
     }).then(function () {
       utils.showTestResult(context);
-    }).catch(function () {
+    }).catch(function (err) {
       utils.showTestResult(context);
+      throw err;
     });
     // .finally(function () {
       // let states = [];

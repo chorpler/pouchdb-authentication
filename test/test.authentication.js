@@ -9,6 +9,7 @@ var PouchDB = utils.TestPouch;
 var serverHost = utils.getConfig().serverHost;
 
 describe('authentication', function () {
+  // this.timeout(10000);
 
   var dbName = serverHost + '/testdb';
   var users = ['aquaman'];
