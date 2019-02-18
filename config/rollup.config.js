@@ -1,7 +1,9 @@
 import replace from 'rollup-plugin-replace';
 import buble from 'rollup-plugin-buble';
-import typescript from 'rollup-plugin-typescript';
-// import resolve from 'rollup-plugin-node-resolve';
+// import typescript from 'rollup-plugin-typescript';
+import typescript from 'rollup-plugin-typescript2';
+import resolve from 'rollup-plugin-node-resolve';
+import commonjs from 'rollup-plugin-commonjs';
 
 var external = Object.keys(require('../package.json').dependencies);
 
@@ -16,7 +18,11 @@ export default config => {
     },
     external: external,
     plugins: [
-      typescript(),
+      resolve(),
+      commonjs(),
+      typescript({
+        rollupCommonJSResolveHack: true,
+      }),
       buble(),
       // resolve({
       //   // use "module" field for ES6 module if possible

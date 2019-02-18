@@ -11,24 +11,21 @@ Easy user authentication for PouchDB/CouchDB.
 
 # Note
 The following changes have been been made in this fork:
+- Changed package name to `pouchdb-auth-utils`
 - Updated to use PouchDB 7.x dependencies, and to work as a plugin with PouchDB 7.x
 - Rewritten in TypeScript
 - Support for callbacks removed. I'm not using callbacks, I hate callbacks, nobody should be using callbacks. Promises are where its at.
+- added `hasRole()`, `addRoles()`, and `deleteRoles()` functions
 - Testing now uses Headless Chromium (via `puppeteer`) instead of PhantomJS, since [PhantomJS was basically deprecated in favor of Headless Chromium](https://groups.google.com/forum/#!topic/phantomjs/9aI5d-LDuNE). This means we can now use ES6 features like `let` and `const` and arrow functions in the tests.
-
-## URGENT NOTICE (13 Feb 2019)
-- ### `pouchdb-fetch` issue
-  
-  Currently, you must manually update the dependency `pouchdb-fetch` to use at least `fetch-cookie@0.7.2` for this plugin to work in a Node.js-only environment.
-  ```
-  cd (your project directory)/node_modules/pouchdb-fetch
-  npm i --save fetch-cookie@0.7.2
-  cd ../..
-  ```
-  **IF YOU DO NOT DO THIS**, `pouchdb-fetch` will use its outdated `fetch-cookie@0.7.0` version, which has a problem parsing AuthSession cookies from CouchDB, and you will not be able to use the `.logIn()` method.
-
-  I decided it was easier to put these instructions in than to bundle `node-fetch` and `fetch-cookie` in this plugin, since that roughly quadruples the size of the plugin, and adding `whatwg-url` has already made it pretty big. (I'm actually thinking of removing that as well, and just requiring Node uses to be using 10.x or later, which already include native support for the URL class. We'll see.)
-
+- Bundle has increased in size, unfortunately, because it now includes the following dependencies:
+  - `node-fetch` and `fetch-cookie`: the version of `fetch-cookie` currently (2019-02-18) used by `pouchdb-fetch` is outdated and would not parse cookies with commas or hyphens in them. So I had to update them and include them in this plugin.
+    Also, I would just use `PouchDB.fetch()` if possible, and avoid pulling any kind of `fetch` in as a dependency. However, `PouchDB.fetch()` must be run from an actual PouchDB database, as in
+    ```js
+    var db = new PouchDB("http://localhost:5984/testdb");
+    var res = db.fetch("/_membership");
+    ```
+    and unfortunately PouchDB assumes you are fetching something from the database itself, so it tries to fetch from `http://localhost:5984/testdb/_membership` instead of `http://localhost:5984/_membership`, which naturally causes an error. Creating a weird "virtual" URL (such as `http://localhost:5984/testdb/../_membership`) will work for some cases (a browser environment using recent versions of Chrome, at least), but not for a Node environment. So I gave up.
+  - `url-parse`: `pouchdb-utils` has an included `parseUri()` function that used to take care of this, but it parses wildly incorrectly if you try to parse some CouchDB 2.x URLs like `/_node/couchdb@localhost/config`. Using native `URL()` objects doesn't work in a Node environment if Node < 10.x, so I included `url-parse` instead.
 ------
 ------
 
@@ -69,8 +66,8 @@ Since version 1.0.0, this plugin **does support Node.js**.
 Using PouchDB Authentication
 ------
 
-* [Setup](https://github.com/pouchdb-community/pouchdb-authentication/blob/master/docs/setup.md)
-* [API](https://github.com/pouchdb-community/pouchdb-authentication/blob/master/docs/api.md)
+* [Setup](https://github.com/chorpler/pouchdb-auth-utils/blob/master/docs/setup.md)
+* [API](https://github.com/chorpler/pouchdb-auth-utils/blob/master/docs/api.md)
 * [CouchDB Authentication recipes][recipes]
 
 

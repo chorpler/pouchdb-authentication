@@ -10,6 +10,10 @@ import {
   getUsersDatabaseUrl,
   putUser,
   signUp,
+  getRoles,
+  addRoles,
+  deleteRoles,
+  hasRole,
 } from "./users";
 
 const PouchDBAuthPlugin:any = {
@@ -29,6 +33,10 @@ const PouchDBAuthPlugin:any = {
   deleteUser          : deleteUser          ,
   changePassword      : changePassword      ,
   changeUsername      : changeUsername      ,
+  getRoles            : getRoles            ,
+  addRoles            : addRoles            ,
+  deleteRoles         : deleteRoles         ,
+  hasRole             : hasRole             ,
 };
 
 const plugin:any = PouchDBAuthPlugin;
@@ -77,9 +85,9 @@ export { plugin };
 // // let plugin:any = PouchDBPlugin;
 // let plugin:PouchDBPlugin = new PouchDBPlugin();
 
-if(typeof window !== 'undefined' && window.PouchDB) {
-  window.PouchDB.plugin(PouchDBAuthPlugin);
-}
+// if(typeof window !== 'undefined' && window.PouchDB) {
+//   window.PouchDB.plugin(PouchDBAuthPlugin);
+// }
 
 // export default plugin;
 // export plugin;

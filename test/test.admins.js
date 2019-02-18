@@ -101,27 +101,24 @@ var testNumber = utils.testNumber, testName = utils.testName;
   });
 
   function testCreateDeleteAdmin(opts) {
-    return db.signUpAdmin('anna', 'secret', opts).then(function (res) {
+    return db.signUpAdmin('anna', 'secret', opts)
+    .then(function (res) {
       should.exist(res);
-
-      return db.logIn('anna', 'secret').then(function (res) {
-        res.ok.should.equal(true);
-
-        return db.deleteAdmin('anna', opts).then(function (res) {
-          should.exist(res);
-
-          return db.logOut().then(function () {
-
-            return db.logIn('anna', 'secret').then(function () {
-              should.fail('shouldn\'t have worked');
-            }, function (err) {
-              should.exist(err);
-              err.error.should.equal('unauthorized');
-              err.reason.should.equal('Name or password is incorrect.');
-            });
-          });
-        });
-      });
+      return db.logIn('anna', 'secret');
+    }).then(function (res) {
+      res.ok.should.equal(true);
+      return db.deleteAdmin('anna', opts);
+    }).then(function (res) {
+      should.exist(res);
+      return db.logOut();
+    }).then(function () {
+      return db.logIn('anna', 'secret');
+    }).then(function () {
+      should.fail('shouldn\'t have worked');
+    }, function (err) {
+      should.exist(err);
+      err.error.should.equal('unauthorized');
+      err.reason.should.equal('Name or password is incorrect.');
     });
   }
 });

@@ -58,7 +58,7 @@ const signUpAdmin = async function(username:string, password:string, opts:LoginO
     let membership:CouchNodeMembership;
     let nodeName:string;
     try {
-      membership = await db.getMembership(opts);
+      membership = await db.getMembership(options);
       // This is a CouchDB 2.x server
       nodeName = membership.all_nodes[0];
     } catch(err) {
@@ -102,7 +102,7 @@ const deleteAdmin = async function(username:string, opts:LoginOptions):Promise<B
     let membership:CouchNodeMembership;
     let nodeName:string;
     try {
-      membership = await db.getMembership(opts);
+      membership = await db.getMembership(options);
       // This is a CouchDB 2.x server
       nodeName = membership.all_nodes[0];
     } catch(err) {

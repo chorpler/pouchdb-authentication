@@ -140,4 +140,71 @@ describe('users.metadata', function () {
       should.not.exist(err);
     });
   });
+
+  it('Test roles functions for user', function () {
+    return db.signUpAdmin('anna', 'secret').then(function (res) {
+      should.exist(res);
+      return db.logIn('anna', 'secret');
+    }).then(function (res) {
+      res.ok.should.equal(true);
+      return db.signup('robin', 'dickgrayson');
+    }).then(function (res) {
+      res.ok.should.equal(true);
+      return db.getRoles('robin');
+    }).then(function (res) {
+      res.should.be.an('array');
+      res.should.deep.equal([]);
+      return db.hasRole('robin', 'sidekick');
+    }).then(function (res) {
+      res.should.equal(false);
+      return db.addRoles('robin', ['sidekick']);
+    }).then(function (res) {
+      res.ok.should.equal(true);
+      return db.hasRole('robin', 'sidekick');
+    }).then(function (res) {
+      res.should.equal(true);
+      return db.getRoles('robin');
+    }).then(function (res) {
+      res.should.be.to.be.an('array');
+      res.should.have.deep.members(['sidekick']);
+      return db.addRoles('robin', ['hero', 'acrobat']);
+    }).then(function (res) {
+      res.ok.should.equal(true);
+      return db.getRoles('robin');
+    }).then(function (res) {
+      res.should.be.an('array');
+      res.should.have.deep.members(['sidekick', 'acrobat', 'hero']);
+      return db.hasRole('robin', 'hero');
+    }).then(function (res) {
+      res.should.equal(true);
+      return db.deleteRoles('robin', ['hero']);
+    }).then(function (res) {
+      res.ok.should.equal(true);
+      return db.hasRole('robin', 'hero');
+    }).then(function (res) {
+      res.should.equal(false);
+      return db.getRoles('robin');
+    }).then(function (res) {
+      res.should.be.an('array');
+      res.should.have.deep.members(['sidekick', 'acrobat']);
+      return db.deleteRoles('robin', ['sidekick', 'acrobat']);
+    }).then(function (res) {
+      res.ok.should.equal(true);
+      return db.getRoles('robin');
+    }).then(function (res) {
+      res.should.be.an('array');
+      res.should.deep.equal([]);
+      return db.deleteUser('robin');
+    }).then(function (res) {
+      res.ok.should.equal(true);
+      return db.deleteAdmin('anna');
+    }).then(function (res) {
+      should.exist(res);
+      return db.logOut();
+    }).then(function (res) {
+      res.ok.should.equal(true);
+    }).catch(function (err) {
+      should.not.exist(err);
+    });
+  });
 });

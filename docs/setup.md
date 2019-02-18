@@ -3,33 +3,35 @@ Setup
 
 ### Requirements
 
-- CouchDB v1.3.0+
-- PouchDB v2.0.0+
+- CouchDB v2.0.0+
+- PouchDB v7.0.0+
 
 ### PouchDB setup
 
-Bower:
-
-    bower install pouchdb
-    bower install pouchdb-authentication
-
-Browserify :
+NPM :
 
     npm install pouchdb --save
-    npm install pouchdb-authentication --save
+    npm install pouchdb-auth-utils --save
 
 ```javascript
 var PouchDB = require("pouchdb");
-PouchDB.plugin(require('pouchdb-authentication'));
+PouchDB.plugin(require('pouchdb-auth-utils'));
+```
+
+```typescript
+import PouchDB from 'pouchdb';
+import * as PouchDBAuthUtils from 'pouchdb-auth-utils';
+
+PouchDB.plugin(PouchDBAuthUtils.default);
 ```
 
 Static :
 
-Or, just grab the latest `pouchdb.authentication.min.js` from [the releases page](https://github.com/pouchdb-community/pouchdb-authentication/releases) and declare it after PouchDB:
+Or, just grab the latest `pouchdb.auth.utils.min.js` from [the releases page](https://github.com/chorpler/pouchdb-auth-utils/releases) and declare it after PouchDB:
 
 ```html
 <script src="pouchdb-XXX.min.js"></script>
-<script src="pouchdb.authentication.min.js"></script>
+<script src="pouchdb.auth.utils.min.js"></script>
 ```
 
 ### CouchDB setup
@@ -51,7 +53,7 @@ In a production environment, don't forget to set up [SSL](https://wiki.apache.or
 
 ### PouchDB setup
 
-Create a `PouchDB` attached to an HTTP backend.  This is the one you'll use for `pouchdb-authentication` stuff.
+Create a `PouchDB` attached to an HTTP backend.  This is the one you'll use for `pouchdb-auth-utils` stuff.
 
 ```js
 var db = new PouchDB('http://localhost:5984/mydb', {skip_setup: true});
@@ -66,4 +68,4 @@ var local = new PouchDB('local_db');
 local.sync(db, {live: true, retry: true}).on('error', console.log.bind(console));
 ```
 
-But the `pouchdb-authentication` API will operate on your remote `PouchDB` object, not your local one.
+But the `pouchdb-auth-utils` API will operate on your remote `PouchDB` object, not your local one.

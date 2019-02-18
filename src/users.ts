@@ -13,7 +13,7 @@ import { assign              } from 'pouchdb-utils' ;
 import { clone               } from 'pouchdb-utils' ;
 import { toPromise           } from 'pouchdb-utils' ;
 
-import * as PouchDB from 'pouchdb-core';
+// import * as PouchDB from 'pouchdb-core';
 
 const getUsersDatabaseUrl = function():string {
   let db:PDB = this;
@@ -21,6 +21,82 @@ const getUsersDatabaseUrl = function():string {
   // console.log(`getUsersDatabaseUrl(): URL and DB is:\n`, userDBURL);
   // console.log(`getUsersDatabaseUrl(): DB is:`, db);
   return userDBURL;
+};
+
+const hasRole = async function(username:string, role:string, opts?:PutUserOptions):Promise<boolean> {
+  try {
+    let db:PDB = this;
+    debuglogemph(`PouchDB.hasRole(): Called for user '${username}'`);
+    let userdoc:PouchDBUserDoc = await db.getUser(username, opts);
+    let roles:string[] = userdoc.roles || [];
+    if(roles.indexOf(role) > -1) {
+      return true;
+    }
+    return false;
+  } catch(err) {
+    throw err;
+  }
+};
+
+const getRoles = async function(username:string, opts?:PutUserOptions):Promise<string[]> {
+  try {
+    let db:PDB = this;
+    debuglogemph(`PouchDB.getRoles(): Called for user '${username}'`);
+    let userdoc:PouchDBUserDoc = await db.getUser(username, opts);
+    let roles:string[] = userdoc.roles || [];
+    return roles;
+  } catch(err) {
+    throw err;
+  }
+};
+
+const addRoles = async function(username:string, roles:string|string[], opts?:PutUserOptions):Promise<BasicResponse> {
+  try {
+    let db:PDB = this;
+    debuglogemph(`PouchDB.addRoles(): Called for user '${username}' and role '${roles}'`);
+    let userdoc:PouchDBUserDoc = await db.getUser(username, opts);
+    let newRoles:string[] = userdoc.roles || [];
+    let rolesToAdd:string[] = Array.isArray(roles) ? roles : typeof roles === 'string' ? [roles] : [];
+    rolesToAdd = rolesToAdd.filter((a:string) => {
+      return typeof a === 'string';
+    });
+    for(let role of rolesToAdd) {
+      if(newRoles.indexOf(role) > -1) {
+        /* This role already exists for this user */
+        continue;
+      } else {
+        newRoles.push(role);
+      }
+    }
+    newRoles.sort();
+    userdoc.roles = newRoles;
+    let res:BasicResponse = await updateUser(db, userdoc, opts);
+    return res;
+  } catch(err) {
+    throw err;
+  }
+};
+
+const deleteRoles = async function(username:string, roles:string|string[], opts?:PutUserOptions):Promise<BasicResponse> {
+  try {
+    let db:PDB = this;
+    debuglogemph(`PouchDB.deleteRoles(): Called for user '${username}' and role '${roles}'`);
+    let userdoc:PouchDBUserDoc = await db.getUser(username, opts);
+    let existingRoles:string[] = userdoc.roles || [];
+    let rolesToDelete:string[] = Array.isArray(roles) ? roles : typeof roles === 'string' ? [roles] : [];
+    let filteredExistingRoles:string[] = existingRoles.filter((a:string) => {
+      if(rolesToDelete.indexOf(a) > -1) {
+        return false;
+      } else {
+        return true;
+      }
+    });
+    userdoc.roles = filteredExistingRoles;
+    let res:BasicResponse = await updateUser(db, userdoc, opts);
+    return res;
+  } catch(err) {
+    throw err;
+  }
 };
 
 const updateUser = async function(db:PDB, user:PouchDBUserDoc, opts:PutUserOptions):Promise<BasicResponse> {
@@ -41,18 +117,18 @@ const updateUser = async function(db:PDB, user:PouchDBUserDoc, opts:PutUserOptio
       'salt',
     ];
   
-    if(opts.metadata) {
-      for(let key in opts.metadata) {
-        if(opts.metadata.hasOwnProperty(key) && reservedWords.indexOf(key) !== -1) {
+    if(options.metadata) {
+      for(let key in options.metadata) {
+        if(options.metadata.hasOwnProperty(key) && reservedWords.indexOf(key) !== -1) {
           let err:AuthError = new AuthError('cannot use reserved word in metadata: "' + key + '"');
           throw err;
         }
       }
-      user = assign(user, opts.metadata);
+      user = assign(user, options.metadata);
     }
   
-    if(opts.roles) {
-      user = assign(user, {roles: opts.roles});
+    if(options.roles) {
+      user = assign(user, {roles: options.roles});
     }
   
     let url:string = '/_users/' + encodeURIComponent(user._id);
@@ -280,4 +356,8 @@ export {
   deleteUser,
   changePassword,
   changeUsername,
+  getRoles,
+  addRoles,
+  deleteRoles,
+  hasRole,
 };
